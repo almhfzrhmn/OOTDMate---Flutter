@@ -1,237 +1,214 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OOTDMate Immersive AI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #0C0C0C;
-            --glass: rgba(26, 26, 26, 0.7);
-            --brown-deep: #481E14;
-            --brown-accent: #9B3922;
-            --primary: #F2613F;
-            --primary-glow: rgba(242, 97, 63, 0.3);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register - OOTDMate</title>
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
 
-        body { 
-            background-color: #000; 
-            display: flex; justify-content: center; align-items: center; 
-            min-height: 100vh; color: #fff; overflow: hidden;
-        }
+<style>
+:root {
+    --bg: #0C0C0C;
+    --glass: rgba(26, 26, 26, 0.7);
+    --primary: #F2613F;
+    --brown-deep: #481E14;
+}
 
-        /* Container HP dengan Efek Cahaya */
-        .phone {
-            width: 375px; height: 780px; background: var(--bg); border-radius: 45px;
-            position: relative; overflow: hidden; border: 2px solid #222;
-            box-shadow: 0 0 100px rgba(155, 57, 34, 0.15);
-        }
+* {
+    box-sizing: border-box;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    margin: 0;
+    padding: 0;
+}
 
-        /* Ambient Background Glow */
-        .phone::before {
-            content: ''; position: absolute; top: -100px; right: -100px;
-            width: 300px; height: 300px; background: var(--brown-deep);
-            filter: blur(80px); border-radius: 50%; z-index: 0; opacity: 0.5;
-        }
+body {
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
 
-        .screen { 
-            position: relative; z-index: 1; padding: 30px 20px; 
-            height: 100%; display: flex; flex-direction: column; 
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+/* 🔥 PHONE CONTAINER */
+.phone {
+    width: 375px;
+    height: 780px;
+    background: var(--bg);
+    border-radius: 45px;
+    overflow: hidden;
+    position: relative;
+    border: 2px solid #222;
+}
 
-        .hide { opacity: 0; pointer-events: none; position: absolute; transform: translateY(20px); }
+/* 🔥 GLOW */
+.phone::before {
+    content: '';
+    position: absolute;
+    top: -100px;
+    right: -100px;
+    width: 300px;
+    height: 300px;
+    background: var(--brown-deep);
+    filter: blur(90px);
+    border-radius: 50%;
+    opacity: 0.5;
+}
 
-        /* --- IMMERSIVE AUTH --- */
-        .auth-bg {
-            position: absolute; top: 0; left: 0; width: 100%; height: 60%;
-            background: linear-gradient(to bottom, transparent, var(--bg)), 
-                        url('https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=500') center/cover;
-            opacity: 0.4;
-        }
+/* 🔥 SCREEN */
+.screen {
+    padding: 25px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    color: white;
+    position: relative;
+    z-index: 2;
+}
 
-        /* --- SCANNING ANIMATION --- */
-        .scanning-line {
-            position: absolute; width: 100%; height: 2px;
-            background: var(--primary); box-shadow: 0 0 15px var(--primary);
-            top: 0; left: 0; animation: scan 3s infinite linear;
-            z-index: 10; display: none;
-        }
+/* 🔥 HEADER */
+.title {
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1.2;
+}
 
-        @keyframes scan {
-            0% { top: 20%; opacity: 0; }
-            50% { opacity: 1; }
-            100% { top: 80%; opacity: 0; }
-        }
+.subtitle {
+    color: #888;
+    margin-top: 8px;
+    margin-bottom: 25px;
+}
 
-        /* --- WARDROBE GRID (Glass Effect) --- */
-        .glass-card {
-            background: var(--glass); backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.05); border-radius: 24px;
-            padding: 15px; margin-bottom: 15px;
-        }
+/* 🔥 GLASS FORM */
+.form-card {
+    background: var(--glass);
+    backdrop-filter: blur(15px);
+    border-radius: 25px;
+    padding: 20px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
 
-        .wardrobe-item {
-            background: #222; border-radius: 20px; aspect-ratio: 1/1.2;
-            overflow: hidden; position: relative; border: 1px solid rgba(155, 57, 34, 0.2);
-        }
+/* 🔥 INPUT */
+.input-group {
+    margin-bottom: 15px;
+}
 
-        .wardrobe-item img { width: 100%; height: 100%; object-fit: cover; }
+.input-group input {
+    width: 100%;
+    padding: 14px;
+    border-radius: 15px;
+    border: none;
+    outline: none;
+    background: rgba(255,255,255,0.05);
+    color: white;
+    font-size: 14px;
+}
 
-        /* --- OUTFIT GENERATOR (The Main Feature) --- */
-        .score-ring {
-            width: 120px; height: 120px; border-radius: 50%;
-            border: 4px solid var(--brown-deep); border-top: 4px solid var(--primary);
-            display: flex; justify-content: center; align-items: center;
-            margin: 0 auto 20px; position: relative;
-            box-shadow: 0 0 20px var(--primary-glow);
-        }
+.input-group input::placeholder {
+    color: #777;
+}
 
-        .outfit-display {
-            display: flex; flex-direction: column; gap: 8px;
-            perspective: 1000px;
-        }
+/* 🔥 CHECKBOX */
+.agree {
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    color: #aaa;
+    margin-top: 10px;
+}
 
-        .piece {
-            width: 100%; height: 140px; background: var(--glass);
-            border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);
-            transform: rotateX(10deg); transition: 0.3s;
-            display: flex; align-items: center; padding: 15px;
-        }
+.agree input {
+    margin-right: 8px;
+    accent-color: var(--primary);
+}
 
-        .piece:hover { transform: rotateX(0deg) scale(1.02); border-color: var(--primary); }
+/* 🔥 BUTTON */
+.btn {
+    margin-top: 20px;
+    width: 100%;
+    padding: 16px;
+    border-radius: 18px;
+    border: none;
+    background: var(--primary);
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(242, 97, 63, 0.3);
+    transition: 0.3s;
+}
 
-        .piece-img {
-            width: 80px; height: 100%; background: #333; border-radius: 15px; margin-right: 20px;
-        }
+.btn:hover {
+    transform: translateY(-2px);
+}
 
-        /* --- NAVIGATION --- */
-        .nav-dock {
-            position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%);
-            width: 85%; height: 65px; background: rgba(30, 30, 30, 0.8);
-            backdrop-filter: blur(20px); border-radius: 25px;
-            display: flex; justify-content: space-around; align-items: center;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
+/* 🔥 FOOTER */
+.footer {
+    margin-top: 15px;
+    text-align: center;
+    font-size: 13px;
+    color: #777;
+}
 
-        .nav-btn {
-            width: 45px; height: 45px; border-radius: 15px;
-            display: flex; justify-content: center; align-items: center;
-            color: var(--text-dim); transition: 0.3s;
-        }
+.footer span {
+    color: var(--primary);
+    cursor: pointer;
+}
 
-        .nav-btn.active { background: var(--primary); color: white; box-shadow: 0 5px 15px var(--primary-glow); }
-
-        /* Floating AI Action */
-        .ai-fab {
-            width: 65px; height: 65px; background: var(--primary);
-            border-radius: 50%; position: absolute; bottom: 100px; right: 25px;
-            display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 10px 25px var(--primary-glow); cursor: pointer;
-            z-index: 100; font-size: 24px;
-        }
-    </style>
+</style>
 </head>
+
 <body>
 
-    <div class="phone">
-        <div id="scanLine" class="scanning-line"></div>
+<div class="phone">
+    <div class="screen">
 
-        <div id="authScreen" class="screen">
-            <div class="auth-bg"></div>
-            <div style="margin-top: auto;">
-                <h1 style="font-size: 38px; line-height: 1; margin-bottom: 15px;">Style <br><span style="color: var(--primary)">Reimagined.</span></h1>
-                <p style="color: #888; margin-bottom: 30px;">AI OOTDMate mengenali pakaianmu dan menyusun gaya terbaik setiap hari.</p>
-                <button onclick="changeScreen('wardrobe')" style="width: 100%; padding: 20px; border-radius: 20px; border: none; background: var(--primary); color: white; font-weight: 700; font-size: 16px;">Mulai Eksplorasi</button>
+        <div>
+            <div class="title">
+                Create <br>
+                <span style="color: var(--primary)">Account</span>
+            </div>
+            <div class="subtitle">
+                Join OOTDMate and elevate your style.
             </div>
         </div>
 
-        <div id="wardrobeScreen" class="screen hide">
-            <h2 style="margin-bottom: 20px;">Wardrobe Kamu</h2>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; overflow-y: auto;">
-                <div class="wardrobe-item">
-                    <img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=200" alt="Jackets">
-                </div>
-                <div class="wardrobe-item">
-                    <img src="https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=200" alt="Jeans">
-                </div>
-                <div class="wardrobe-item">
-                    <img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=200" alt="Tshirt">
-                </div>
-                <div class="wardrobe-item">
-                    <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=200" alt="Shoes">
-                </div>
-            </div>
-            
-            <div class="ai-fab" onclick="startAI()">✨</div>
-        </div>
+        <div class="form-card">
 
-        <div id="aiScreen" class="screen hide">
-            <div class="score-ring">
-                <div style="text-align: center;">
-                    <span style="font-size: 24px; font-weight: 800;">98</span>
-                    <p style="font-size: 10px; color: var(--primary);">MATCH</p>
-                </div>
+            <div class="input-group">
+                <input type="text" placeholder="Full Name">
             </div>
 
-            <div class="outfit-display">
-                <div class="piece">
-                    <div class="piece-img" style="background: url('https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=150') center/cover;"></div>
-                    <div>
-                        <p style="font-size: 14px; font-weight: 600;">Leather Jacket</p>
-                        <p style="font-size: 11px; color: var(--primary);">Casual Style</p>
-                    </div>
-                </div>
-                <div class="piece">
-                    <div class="piece-img" style="background: url('https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=150') center/cover;"></div>
-                    <div>
-                        <p style="font-size: 14px; font-weight: 600;">Slim Indigo Jeans</p>
-                        <p style="font-size: 11px; color: var(--text-dim);">Contrast: High</p>
-                    </div>
-                </div>
-                <div class="piece">
-                    <div class="piece-img" style="background: url('https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=150') center/cover;"></div>
-                    <div>
-                        <p style="font-size: 14px; font-weight: 600;">Urban Sneakers</p>
-                        <p style="font-size: 11px; color: var(--text-dim);">Last worn: 2 days ago</p>
-                    </div>
-                </div>
+            <div class="input-group">
+                <input type="text" placeholder="Username">
             </div>
 
-            <button style="margin-top: auto; background: var(--brown-deep); border: 1px solid var(--brown-accent); color: white; padding: 15px; border-radius: 15px; font-weight: 600;">Simpan ke Favorit</button>
+            <div class="input-group">
+                <input type="email" placeholder="Email">
+            </div>
+
+            <div class="input-group">
+                <input type="password" placeholder="Password">
+            </div>
+
+            <div class="input-group">
+                <input type="password" placeholder="Confirm Password">
+            </div>
+
+            <div class="agree">
+                <input type="checkbox">
+                <label>I agree to Terms & Conditions</label>
+            </div>
+
+            <button class="btn">Register</button>
+
+            <div class="footer">
+                Already have an account? <span>Login</span>
+            </div>
+
         </div>
 
-        <div class="nav-dock">
-            <div class="nav-btn active" onclick="changeScreen('wardrobe')">🏠</div>
-            <div class="nav-btn">📅</div>
-            <div class="nav-btn" onclick="changeScreen('ai')">🧥</div>
-            <div class="nav-btn">⚙️</div>
-        </div>
     </div>
+</div>
 
-    <script>
-        function changeScreen(type) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.add('hide'));
-            if(type === 'wardrobe') {
-                document.getElementById('wardrobeScreen').classList.remove('hide');
-            } else if(type === 'ai') {
-                document.getElementById('aiScreen').classList.remove('hide');
-            }
-        }
-
-        function startAI() {
-            const scanner = document.getElementById('scanLine');
-            scanner.style.display = 'block';
-            
-            // Simulasi AI Berpikir
-            setTimeout(() => {
-                scanner.style.display = 'none';
-                changeScreen('ai');
-            }, 2500);
-        }
-    </script>
 </body>
 </html>

@@ -37,6 +37,7 @@ dependencies:
   supabase_flutter: ^2.12.4
   google_fonts: ^8.0.2
   flutter_dotenv: ^6.0.0
+  getwidget: ^7.0.0
 
 dev_dependencies:
   flutter_test:

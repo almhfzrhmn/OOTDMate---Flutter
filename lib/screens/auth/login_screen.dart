@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ootdmate_frontend/screens/home/home_screen.dart';
+import 'package:ootdmate_frontend/screens/auth/register_screen.dart';
 import 'package:ootdmate_frontend/services/auth-services/auth_services.dart';
 import 'package:ootdmate_frontend/widgets/background_wrapper.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -19,7 +19,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _obscurePassword = true;
   bool _isLoading = false;
-  bool _isLogin = false;
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
@@ -28,14 +27,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       await _authServices.login(
-        email: _emailController.text,
+        email: _emailController.text.trim(),
         password: _passwordController.text,
       );
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
+      // AuthGate otomatis handle navigasi ke HomeScreen
     } on AuthException catch (e) {
       if (!mounted) return;
       _showError(e.message);
@@ -43,7 +38,9 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       _showError('Terjadi Error saat login : ${e.toString()}');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -68,52 +65,108 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Stack(
           children: [
             Align(
-              alignment: AlignmentGeometry.bottomCenter,
+              alignment: Alignment.bottomCenter,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'WELCOME BACK!',
-                      style: Theme.of(context).textTheme.headlineMedium ?.copyWith(color: AppTheme.textPrimary),
-                    ),
-                    const SizedBox(height: 0),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Don\'t have an account?',
-                          style: Theme.of(context).textTheme.bodyMedium ?.copyWith(color: AppTheme.textPrimary),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'WELCOME BACK!',
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(color: AppTheme.textPrimary),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Don\'t have an account?',
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: AppTheme.textPrimary),
+                          ),
+                          TextButton(
+                            onPressed: _isLoading
+                                ? null
+                                : () async {
+                                    final registered =
+                                        await Navigator.push<bool>(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                const RegisterScreen(),
+                                          ),
+                                        );
+
+                                    if (!context.mounted ||
+                                        registered != true) {
+                                      return;
+                                    }
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Registration success. Check email to verify account',
+                                        ),
+                                      ),
+                                    );
+                                  },
+                            child: Text(
+                              'Sign Up',
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(letterSpacing: 0),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      const Text(
+                        'Login to your account',
+                        style: TextStyle(fontSize: 18, color: Colors.white),
+                      ),
+                      const SizedBox(height: 24),
+                      _inputField(
+                        controller: _emailController,
+                        hint: 'Email',
+                        icon: Icons.email,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Email wajib diisi';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      _inputField(
+                        controller: _passwordController,
+                        hint: 'Password',
+                        icon: Icons.lock,
+                        isPassword: true,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Password wajib diisi';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      Center(
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _submit,
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text('Login'),
                         ),
-                        SizedBox(width: 0),
-                        TextButton(
-                          onPressed: () {
-                            //
-                          },
-                          child: Text('Sign Up', style: TextStyle(color: Colors.white70, fontSize: 16)),
-                        )
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-                    const Text(
-                      'Login to your account',
-                      style: TextStyle(fontSize: 18, color: Colors.white),
-                    ),
-                    SizedBox(height: 24),
-                    _inputField(
-                      controller: _emailController,
-                      hint: 'Username / Email',
-                      icon: Icons.person,
-                    ),
-                    const SizedBox(height: 16),
-                    _inputField(
-                      controller: _passwordController,
-                      hint: 'Password',
-                      icon: Icons.lock,
-                      isPassword: true,
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -128,19 +181,32 @@ class _LoginScreenState extends State<LoginScreen> {
     required String hint,
     required IconData icon,
     bool isPassword = false,
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
   }) {
     return TextFormField(
       controller: controller,
-      obscureText: isPassword,
-      style: TextStyle(
-        color: AppTheme.textPrimary,
-        fontSize: 14,
-      ),
+      obscureText: isPassword ? _obscurePassword : false,
+      keyboardType: keyboardType,
+      enabled: !_isLoading,
+      textInputAction: isPassword ? TextInputAction.done : TextInputAction.next,
+      onFieldSubmitted: isPassword ? (_) => _submit() : null,
+      style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
       decoration: InputDecoration(
         hintText: hint,
         prefixIcon: Icon(icon),
-        suffixIcon: isPassword ? Icon(Icons.visibility_off) : null,
+        suffixIcon: isPassword
+            ? IconButton(
+                onPressed: () {
+                  setState(() => _obscurePassword = !_obscurePassword);
+                },
+                icon: Icon(
+                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                ),
+              )
+            : null,
       ),
+      validator: validator,
     );
   }
 }
