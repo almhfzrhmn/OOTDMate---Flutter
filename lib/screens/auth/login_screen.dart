@@ -4,6 +4,7 @@ import 'package:ootdmate_frontend/services/auth-services/auth_services.dart';
 import 'package:ootdmate_frontend/widgets/background_wrapper.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ootdmate_frontend/core/theme/app_theme.dart';
+import 'package:ootdmate_frontend/widgets/glass_text_field.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -75,27 +76,22 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       Text(
                         'WELCOME BACK!',
-                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          shadows: [
-                            Shadow(
-                              color: AppTheme.textPrimary.withAlpha(70),
-                              offset: Offset(-10, 4),
-                              blurRadius: 10,
+                        style: Theme.of(context).textTheme.headlineLarge
+                            ?.copyWith(
+                              shadows: [
+                                Shadow(
+                                  color: AppTheme.textPrimary.withAlpha(70),
+                                  offset: Offset(-10, 4),
+                                  blurRadius: 10,
+                                ),
+                              ],
+                              fontSize: 34,
                             ),
-                          ],
-                          fontSize: 34,
-                        ),
-                        // style: Theme.of(context).textTheme.displayLarge
-                        //     ?.copyWith(color: AppTheme.textPrimary),
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
-                            'Don\'t have an account?',
-                            // style: Theme.of(context).textTheme.bodyMedium
-                            //     ?.copyWith(color: AppTheme.textPrimary),
-                          ),
+                          Text('Don\'t have an account?', style: Theme.of(context).textTheme.bodyMedium,),
                           TextButton(
                             onPressed: _isLoading
                                 ? null
@@ -124,7 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: Text(
                               'Sign Up',
                               style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(letterSpacing: 0),
+                                  ?.copyWith(letterSpacing: 0, fontWeight: FontWeight.w900),
                             ),
                           ),
                         ],
@@ -135,29 +131,24 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(fontSize: 18, color: Colors.white),
                       ),
                       const SizedBox(height: 24),
-                      _inputField(
+                      GlassTextField(
+                        hintText: "Email",
+                        prefixIcon: Icons.mail,
                         controller: _emailController,
-                        hint: 'Email',
-                        icon: Icons.email,
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Email wajib diisi';
-                          }
-                          return null;
-                        },
                       ),
-                      const SizedBox(height: 16),
-                      _inputField(
+                      const SizedBox(height: 10),
+                      GlassTextField(
+                        hintText: "Password",
+                        prefixIcon: Icons.lock,
+                        suffixIcon: _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        obscureText: _obscurePassword,
                         controller: _passwordController,
-                        hint: 'Password',
-                        icon: Icons.lock,
-                        isPassword: true,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Password wajib diisi';
-                          }
-                          return null;
+                        onSuffixIconPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
                         },
                       ),
                       const SizedBox(height: 12),
@@ -172,7 +163,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                     strokeWidth: 2,
                                   ),
                                 )
-                              : const Text('Login', style:  TextStyle(color: AppTheme.primary),),
+                              : const Text(
+                                  'Login',
+                                  style: TextStyle(color: AppTheme.primary),
+                                ),
                         ),
                       ),
                     ],
@@ -183,43 +177,6 @@ class _LoginScreenState extends State<LoginScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _inputField({
-    required TextEditingController controller,
-    required String hint,
-    required IconData icon,
-    bool isPassword = false,
-    TextInputType? keyboardType,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      obscureText: isPassword ? _obscurePassword : false,
-      keyboardType: keyboardType,
-      enabled: !_isLoading,
-      textInputAction: isPassword ? TextInputAction.done : TextInputAction.next,
-      onFieldSubmitted: isPassword ? (_) => _submit() : null,
-      style: const TextStyle(color: AppTheme.secondary, fontSize: 14),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(
-          color: AppTheme.textPrimary.withAlpha(140)
-        ),
-        prefixIcon: Icon(icon, color: AppTheme.secondary,),
-        suffixIcon: isPassword
-            ? IconButton(
-                onPressed: () {
-                  setState(() => _obscurePassword = !_obscurePassword);
-                },
-                icon: Icon(
-                  _obscurePassword ? Icons.visibility_off : Icons.visibility, color: AppTheme.secondary,
-                ),
-              )
-            : null,
-      ),
-      validator: validator,
     );
   }
 }
