@@ -3,6 +3,7 @@ import 'package:ootdmate_frontend/core/theme/app_theme.dart';
 import 'package:ootdmate_frontend/services/auth-services/auth_services.dart';
 import 'package:ootdmate_frontend/widgets/background_wrapper.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:ootdmate_frontend/widgets/glass_text_field.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -151,78 +152,51 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      _inputFields(
-                        controller: _usernameController,
-                        hint: 'Username',
-                        icon: Icons.person,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Username wajib diisi';
-                          }
-                          if (value.trim().length < 3) {
-                            return 'Username minimal 3 karakter';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      _inputFields(
-                        controller: _emailController,
-                        hint: 'Email',
-                        icon: Icons.email,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Email wajib diisi';
-                          }
-                          if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                            return 'Email tidak valid';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      _inputFields(
+                      GlassTextField(
+                        hintText: "Fullname",
+                        prefixIcon: Icons.person,
                         controller: _fullNameController,
-                        hint: 'Full Name',
-                        icon: Icons.person,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Nama lengkap wajib diisi';
-                          }
-                          return null;
-                        },
                       ),
                       const SizedBox(height: 10),
-                      _inputFields(
+                      GlassTextField(
+                        hintText: "Username",
+                        prefixIcon: Icons.person_2,
+                        controller: _usernameController,
+                      ),
+                      const SizedBox(height: 10),
+                      GlassTextField(
+                        hintText: "Email",
+                        prefixIcon: Icons.email,
+                        controller: _emailController,
+                      ),
+                      const SizedBox(height: 10),
+                      GlassTextField(
+                        hintText: "Password",
+                        prefixIcon: Icons.lock,
+                        obscureText: _obscurePassword,
+                        suffixIcon: _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                         controller: _passwordController,
-                        hint: 'Password',
-                        icon: Icons.lock,
-                        isPassword: true,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Password wajib diisi';
-                          }
-                          if (value.length < 6) {
-                            return 'Password minimal 6 karakter';
-                          }
-                          return null;
+                        onSuffixIconPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
                         },
                       ),
                       const SizedBox(height: 10),
-                      _inputFields(
+                      GlassTextField(
+                        hintText: "Confirm Password",
+                        prefixIcon: Icons.lock,
+                        obscureText: _obscurePassword,
+                        suffixIcon: _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                         controller: _confirmPasswordController,
-                        hint: 'Confirm Password',
-                        icon: Icons.lock,
-                        isPassword: true,
-                        isConfirmPassword: true,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Konfirmasi password wajib diisi';
-                          }
-                          if (value != _passwordController.text) {
-                            return 'Konfirmasi password tidak sama';
-                          }
-                          return null;
+                        onSuffixIconPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
                         },
                       ),
                       const SizedBox(height: 10),
