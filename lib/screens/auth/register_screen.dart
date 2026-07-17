@@ -22,7 +22,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   bool _obscurePassword = true;
-  bool _obscureConfirmPassword = true;
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
@@ -220,56 +219,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _inputFields({
-    required TextEditingController controller,
-    required String hint,
-    required IconData icon,
-    bool isPassword = false,
-    bool isConfirmPassword = false,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      obscureText: isPassword
-          ? (isConfirmPassword ? _obscureConfirmPassword : _obscurePassword)
-          : false,
-      enabled: !_isLoading,
-      keyboardType: hint == 'Email'
-          ? TextInputType.emailAddress
-          : TextInputType.text,
-      textInputAction: isConfirmPassword
-          ? TextInputAction.done
-          : TextInputAction.next,
-      onFieldSubmitted: isConfirmPassword ? (_) => _submit() : null,
-      style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
-      decoration: InputDecoration(
-        hintText: hint,
-        prefixIcon: Icon(icon),
-        suffixIcon: isPassword
-            ? IconButton(
-                onPressed: () {
-                  setState(() {
-                    if (isConfirmPassword) {
-                      _obscureConfirmPassword = !_obscureConfirmPassword;
-                    } else {
-                      _obscurePassword = !_obscurePassword;
-                    }
-                  });
-                },
-                icon: Icon(
-                  (isConfirmPassword
-                          ? _obscureConfirmPassword
-                          : _obscurePassword)
-                      ? Icons.visibility_off
-                      : Icons.visibility,
-                ),
-              )
-            : null,
-      ),
-      validator: validator,
     );
   }
 }
