@@ -110,13 +110,13 @@ class _HomeScreenState extends State<HomeScreen> {
             // ── Avatar ──
             CircleAvatar(
               radius: 48,
-              backgroundColor: AppTheme.surfaceVariant,
+              backgroundColor: AppTheme.secondary,
               child: Text(
                 name[0].toUpperCase(),
                 style: GoogleFonts.poppins(
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.accent,
+                  color: AppTheme.textPrimary,
                 ),
               ),
             ),
@@ -139,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppTheme.surfaceVariant.withAlpha(128),
+                color: AppTheme.acidGreen.withAlpha(128),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: Colors.white.withAlpha(13),

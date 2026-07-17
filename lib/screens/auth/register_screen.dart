@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:ootdmate_frontend/core/theme/app_theme.dart';
 import 'package:ootdmate_frontend/services/auth-services/auth_services.dart';
 import 'package:ootdmate_frontend/widgets/background_wrapper.dart';
@@ -93,14 +92,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'WELCOME TO',
-                        style: Theme.of(context).textTheme.headlineSmall,
+                        'Welcome To',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 12,
+                        ),
                       ),
                       const SizedBox(height: 0),
                       Text(
-                        'OOTDMate',
-                        style: GoogleFonts.orbitron(
-                          textStyle: Theme.of(context).textTheme.headlineMedium,
+                        'OOTDMATE',
+                        style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                          fontSize: 45,
+                          shadows: [
+                            Shadow(
+                              color: AppTheme.textPrimary.withAlpha(70),
+                              offset: Offset(-10, 4),
+                              blurRadius: 10
+                            )
+                          ]
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -114,7 +123,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         children: [
                           Text(
                             'Already have an account?',
-                            style: Theme.of(context).textTheme.bodyMedium,
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.5,
+                            ),
                           ),
                           TextButton(
                             onPressed: _isLoading
@@ -122,10 +134,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 : () => Navigator.pop(context),
                             child: Text(
                               'Login',
-                              style: Theme.of(context).textTheme.bodyMedium,
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.1
+                              ),
                             ),
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        "Create New Account",
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.1,
+                        ),
                       ),
                       const SizedBox(height: 10),
                       _inputFields(

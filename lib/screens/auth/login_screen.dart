@@ -75,16 +75,26 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       Text(
                         'WELCOME BACK!',
-                        style: Theme.of(context).textTheme.headlineMedium
-                            ?.copyWith(color: AppTheme.textPrimary),
+                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                          shadows: [
+                            Shadow(
+                              color: AppTheme.textPrimary.withAlpha(70),
+                              offset: Offset(-10, 4),
+                              blurRadius: 10,
+                            ),
+                          ],
+                          fontSize: 34,
+                        ),
+                        // style: Theme.of(context).textTheme.displayLarge
+                        //     ?.copyWith(color: AppTheme.textPrimary),
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
                             'Don\'t have an account?',
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(color: AppTheme.textPrimary),
+                            // style: Theme.of(context).textTheme.bodyMedium
+                            //     ?.copyWith(color: AppTheme.textPrimary),
                           ),
                           TextButton(
                             onPressed: _isLoading
@@ -162,7 +172,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     strokeWidth: 2,
                                   ),
                                 )
-                              : const Text('Login'),
+                              : const Text('Login', style:  TextStyle(color: AppTheme.primary),),
                         ),
                       ),
                     ],
@@ -191,17 +201,20 @@ class _LoginScreenState extends State<LoginScreen> {
       enabled: !_isLoading,
       textInputAction: isPassword ? TextInputAction.done : TextInputAction.next,
       onFieldSubmitted: isPassword ? (_) => _submit() : null,
-      style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+      style: const TextStyle(color: AppTheme.secondary, fontSize: 14),
       decoration: InputDecoration(
         hintText: hint,
-        prefixIcon: Icon(icon),
+        hintStyle: TextStyle(
+          color: AppTheme.textPrimary.withAlpha(140)
+        ),
+        prefixIcon: Icon(icon, color: AppTheme.secondary,),
         suffixIcon: isPassword
             ? IconButton(
                 onPressed: () {
                   setState(() => _obscurePassword = !_obscurePassword);
                 },
                 icon: Icon(
-                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                  _obscurePassword ? Icons.visibility_off : Icons.visibility, color: AppTheme.secondary,
                 ),
               )
             : null,

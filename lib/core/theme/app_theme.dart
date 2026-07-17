@@ -5,18 +5,25 @@ class AppTheme {
   // ─────────────────────────────────────────────
   // COLOR PALETTE
   // ─────────────────────────────────────────────
+
+  // CORE
   static const Color primary = Color(0xFF0C0C0C);
-  static const Color secondary = Color(0xFF481E14);
-  static const Color tertiary = Color(0xFF9C4A2D);
-  static const Color accent = Color(0xFFD4846A);
-  static const Color textPrimary = Color(0xFFFFFFFF);
-  static const Color textSecondary = Color(0xB3FFFFFF); // white70
-  static const Color textMuted = Color(0x80FFFFFF); // white50
-  static const Color background = Color(0xFF0C0C0C);
-  static const Color surface = Color(0xFF1A1A1A);
-  static const Color surfaceVariant = Color(0xFF252525);
-  static const Color error = Color(0xFFE53935);
-  static const Color success = Color(0xFF43A047);
+  static const Color primarySecond = Color(0xFF0D0D0D);
+  static const Color secondary = Color(0xFF1A1A1A);
+  static const Color surface = Color(0xFF2D2D2D);
+  static const Color mediumGrey =  Color(0xFF4D4D4D);
+  static const Color lightGrey = Color(0xFFA0A0A0);
+  
+  // ACCENT COLORS
+  static const Color neonBlue = Color(0xFF00F0FF);
+  static const Color acidGreen = Color(0xFFCCFF00);
+  static const Color glitchMagenta = Color(0xFFFF007A);
+  static const Color textPrimary = Color(0xFFF2F2F2);
+  static const Color textSecondary = Color(0xFF8C8C8C);
+
+  // STATE COLORS
+  static const Color error = Color(0xFFEA2115);
+  static const Color success = Color(0xFF00E676);
 
   // ─────────────────────────────────────────────
   // THEME DATA
@@ -25,22 +32,28 @@ class AppTheme {
     useMaterial3: true,
     brightness: Brightness.dark,
     colorScheme: const ColorScheme.dark(
-      primary: secondary,
+      primary: primary,
       onPrimary: textPrimary,
-      secondary: tertiary,
+      secondary: secondary,
       onSecondary: textPrimary,
       surface: surface,
       onSurface: textPrimary,
       error: error,
       onError: textPrimary,
     ),
-    scaffoldBackgroundColor: background,
+    scaffoldBackgroundColor: primary,
 
     // ── TEXT THEME ──
     textTheme: TextTheme(
-      headlineLarge: GoogleFonts.montserrat(
+
+      displayLarge: GoogleFonts.poppins(
+        fontSize: 50,
+        fontWeight: FontWeight.w900,                  // APP BRAND
+        color: textPrimary
+      ),
+      headlineLarge: GoogleFonts.poppins(
         fontSize: 32,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w900,
         color: textPrimary,
       ),
       headlineMedium: GoogleFonts.poppins(
@@ -55,33 +68,34 @@ class AppTheme {
         fontWeight: FontWeight.bold,
         color: textPrimary,
       ),
-      titleLarge: GoogleFonts.poppins(
-        fontSize: 18,
+      
+      titleLarge: GoogleFonts.inter(
+        fontSize: 24,
         fontWeight: FontWeight.w600,
         color: textPrimary,
       ),
-      titleMedium: GoogleFonts.poppins(
+      titleMedium: GoogleFonts.inter(
         fontSize: 16,
         fontWeight: FontWeight.w600,
         color: textPrimary,
       ),
-      bodyLarge: GoogleFonts.poppins(
+      bodyLarge: GoogleFonts.plusJakartaSans(
         fontSize: 16,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w500,
         color: textPrimary,
       ),
-      bodyMedium: GoogleFonts.poppins(
-        fontSize: 16,
+      bodyMedium: GoogleFonts.plusJakartaSans(
+        fontSize: 14,
         fontWeight: FontWeight.normal,
         letterSpacing: 0.1,
         color: textPrimary,
       ),
-      bodySmall: GoogleFonts.poppins(
+      bodySmall: GoogleFonts.plusJakartaSans(
         fontSize: 12,
         fontWeight: FontWeight.normal,
-        color: textSecondary,
+        color: textPrimary,
       ),
-      labelLarge: GoogleFonts.poppins(
+      labelLarge: GoogleFonts.plusJakartaSans(
         fontSize: 14,
         fontWeight: FontWeight.w600,
         color: textPrimary,
@@ -104,16 +118,17 @@ class AppTheme {
     // ── ELEVATED BUTTON ──
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: secondary,
-        foregroundColor: textPrimary,
-        minimumSize: const Size(double.infinity, 52),
+        backgroundColor: acidGreen,
+        foregroundColor: primary,
+        fixedSize: const Size(148, 36),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(30),
         ),
         elevation: 0,
         textStyle: GoogleFonts.poppins(
-          fontSize: 16,
+          fontSize: 12,
           fontWeight: FontWeight.w600,
+          color: textPrimary
         ),
       ),
     ),
@@ -121,7 +136,7 @@ class AppTheme {
     // ── TEXT BUTTON ──
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: accent,
+        foregroundColor: textSecondary,
         textStyle: GoogleFonts.poppins(
           fontSize: 14,
           fontWeight: FontWeight.w600,
@@ -144,13 +159,13 @@ class AppTheme {
     // ── INPUT DECORATION ──
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: surfaceVariant.withAlpha(153),
+      fillColor: lightGrey.withAlpha(153),
       hintStyle: GoogleFonts.poppins(
-        color: textMuted,
+        color: secondary.withAlpha(150),
         fontSize: 14,
       ),
-      prefixIconColor: textMuted,
-      suffixIconColor: textMuted,
+      prefixIconColor: secondary,
+      suffixIconColor: secondary,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide.none,
@@ -161,7 +176,7 @@ class AppTheme {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: accent, width: 1.5),
+        borderSide: const BorderSide(color: secondary, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
@@ -184,7 +199,7 @@ class AppTheme {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
-      backgroundColor: surfaceVariant,
+      backgroundColor: acidGreen,
       contentTextStyle: GoogleFonts.poppins(
         fontSize: 14,
         color: textPrimary,
@@ -206,4 +221,5 @@ class AppTheme {
       thickness: 1,
     ),
   );
+  
 }

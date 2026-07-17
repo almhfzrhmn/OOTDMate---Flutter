@@ -25,8 +25,6 @@ class AuthServices {
     final user = response.user;
     final session = response.session ?? _client.auth.currentSession;
 
-    // If email confirmation is enabled, Supabase may return a user without an
-    // active session. RLS-protected profile creation will then happen on login.
     if (user != null && session != null) {
       await _upsertProfile(
         id: user.id,
