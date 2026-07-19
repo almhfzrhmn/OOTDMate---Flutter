@@ -1,16 +1,39 @@
 import "package:dio/dio.dart";
+import 'package:flutter/foundation.dart';
 import 'api_constants.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DioClient {
-  static final Dio dio = Dio(
-    BaseOptions (
-      baseUrl: ApiConstants.baseUrl,
-      connectTimeout: Duration(seconds: 10),
-      receiveTimeout: Duration(seconds: 10),
+  late final Dio dio;
 
-      headers: {
-        "Content-Type" : "application/json",
-      },
-    ),
-  );
+  DioClient() {
+    dio = Dio(
+      BaseOptions(
+        baseUrl: ApiConstants.baseUrl,
+        connectTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 10),
+      ),
+    );
+
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          final session = Supabase.instance.client.auth.currentSession;
+          final token = session?.accessToken;
+
+          if(token != null) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
+
+          return handler.next(options);
+        },
+        onError: (DioException e, handler) {
+          if(kDebugMode) {
+            print("Error API : ${e.response?.statusCode} - ${e.message}");
+            return handler.next(e);
+          }
+        },
+      ),
+    );
+  }
 }
