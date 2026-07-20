@@ -31,8 +31,8 @@ class AuthGate extends StatelessWidget {
         final session = snapshot.data?.session ?? supabase.auth.currentSession;
 
         if (session != null) {
-          return const WardrobeScreen();
-          // return const HomeScreen();
+          // return const WardrobeScreen();
+          return const HomeScreen();
         } else {
           return const LoginScreen();
         }

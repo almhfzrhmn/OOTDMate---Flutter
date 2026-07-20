@@ -69,7 +69,7 @@ class AppTheme {
         color: textPrimary,
       ),
       
-      titleLarge: GoogleFonts.inter(
+      titleLarge: GoogleFonts.plusJakartaSans(
         fontSize: 24,
         fontWeight: FontWeight.w600,
         color: textPrimary,
