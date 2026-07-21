@@ -10,7 +10,11 @@ class GlassTextField extends StatelessWidget {
   final VoidCallback? onSuffixIconPressed;
   final bool obscureText;
   final TextInputType keyboardType;
+  final TextInputAction? textInputAction;
 
+  final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
+  
   final double height;
   final double blurSigma;
 
@@ -25,6 +29,9 @@ class GlassTextField extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.height = 56,
     this.blurSigma = 2,
+    this.textInputAction,
+    this.onChanged,
+    this.onSubmitted
   });
 
   @override
@@ -67,6 +74,12 @@ class GlassTextField extends StatelessWidget {
               controller: controller,
               obscureText: obscureText,
               keyboardType: keyboardType,
+
+              // For Search-Spesific
+              textInputAction: textInputAction,
+              onChanged: onChanged,
+              onSubmitted: onSubmitted,
+              
               cursorColor: Colors.white,
               style: const TextStyle(
                 color: AppTheme.textPrimary,

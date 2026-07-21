@@ -1,12 +1,9 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:ootdmate_frontend/core/theme/app_theme.dart';
 import 'package:ootdmate_frontend/models/user_model.dart';
 import 'package:ootdmate_frontend/services/auth-services/auth_services.dart';
 import 'package:ootdmate_frontend/widgets/app_header.dart';
 import 'package:ootdmate_frontend/screens/core/wardrobes/wardrobe_screen.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -54,6 +51,22 @@ class _HomeScreenState extends State<HomeScreen> {
         avatarUrl: avatarUrl,
         username: name,
         currentUser: _userProfile,
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => WardrobeScreen(
+                  userProfile: _userProfile,
+                  avatarUrl: avatarUrl,
+                ),
+              ),
+            );
+          },
+          child: Text("To Wardrobe"),
+        ),
       ),
     );
   }
