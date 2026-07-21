@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ootdmate_frontend/screens/auth/login_screen.dart';
 import 'package:ootdmate_frontend/screens/core/home/home_screen.dart';
-import 'package:ootdmate_frontend/screens/core/wardrobes/wardrobe_screen.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
