@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ootdmate_frontend/core/theme/app_theme.dart';
 import 'package:ootdmate_frontend/models/user_model.dart';
@@ -83,13 +84,10 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
                         value: null,
                         child: Text('All'),
                       ),
-                      ..._categories
-                          .map(
-                            (c) => DropdownMenuItem<String?>(
-                              value: c,
-                              child: Text(c),
-                            ),
-                          ),
+                      ..._categories.map(
+                        (c) =>
+                            DropdownMenuItem<String?>(value: c, child: Text(c)),
+                      ),
                     ],
                     onChanged: (v) => setModalState(() => tempCategory = v),
                     decoration: const InputDecoration(
@@ -163,6 +161,39 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
     }
   }
 
+  Widget _buildCategoryButton(String category, Color color) {
+    final bool selected = _selectedCategory == category;
+    return ElevatedButton(
+      onPressed: () {
+        setState(() { 
+          _selectedCategory = category;
+        });
+        _fetchData(
+          nameQuery: _searchController.text.isEmpty
+              ? null
+              : _searchController.text,
+          category: _selectedCategory,
+          sortDesc: _sortDescending,
+        );
+      },
+      style: ElevatedButton.styleFrom(
+        minimumSize: const Size(100, 17),
+        padding: EdgeInsets.zero,
+        backgroundColor: selected ? color : color.withAlpha(130),
+        elevation: selected ? 2 : 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      ),
+      child: Text(
+        category,
+        style: TextStyle(
+          color: selected ? AppTheme.primary : color,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final displayName = widget.userProfile?.fullName ?? 'Guest';
@@ -212,6 +243,19 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 10),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildCategoryButton('Topwear', AppTheme.acidGreen),
+                    const SizedBox(width: 12),
+                    _buildCategoryButton('Bottomwear', AppTheme.success),
+                    const SizedBox(width: 12),
+                    _buildCategoryButton('Footwear', AppTheme.neonBlue),
+                  ],
+                ),
               ),
               const SizedBox(height: 12),
               Expanded(
