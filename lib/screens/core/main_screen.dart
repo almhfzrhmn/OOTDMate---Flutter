@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:ootdmate_frontend/models/user_model.dart';
+import 'package:ootdmate_frontend/services/auth-services/auth_services.dart';
 import 'package:ootdmate_frontend/widgets/custom_navbar_curved.dart';
 
 import "package:ootdmate_frontend/screens/core/home/home_screen.dart";
@@ -13,31 +15,51 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  // 1. Menyimpan state index yang sedang aktif (dimulai dari 0 yaitu Home)
+  final AuthServices _authServices = AuthServices();
+  UserModel? _userProfile;
+  bool _isLoadingProfile = true;
   int _selectedIndex = 0;
 
-  // 2. Daftar halaman (List of Widgets) yang akan ditampilkan di body
-  // Sementara kita pakai Center Text, nanti tinggal kamu ganti dengan HomeScreen(), dsb.
-  final List<Widget> _pages = [
-    HomeScreen(),
-    WardrobeScreen(),
-    // const Center(child: Text("Cart Screen", style: TextStyle(fontSize: 24))),
-    // const Center(child: Text("Calendar Screen", style: TextStyle(fontSize: 24))),
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async{
+    final profile = await _authServices.getProfile();
+    if(!mounted) return;
+    setState(() {
+      _userProfile = profile;
+      _isLoadingProfile = false;
+    });
+  }
+
+  List<Widget> get _pages => [
+    HomeScreen(userProfile : _userProfile),
+    WardrobeScreen(userProfile: _userProfile),
   ];
 
   @override
   Widget build(BuildContext context) {
+
+    if (_isLoadingProfile) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
     return Scaffold(
-      // 3. Menggunakan IndexedStack agar state halaman tidak hilang saat pindah tab
+      
+      extendBody: true, // DELETE IF DONT GIVE ANY EFFECT
       body: IndexedStack(
         index: _selectedIndex,
         children: _pages,
       ),
-      // 4. Memanggil Navbar buatanmu yang sudah kita perbaiki tadi
       bottomNavigationBar: CustomNavBarCurved(
         currentIndex: _selectedIndex,
         onTap: (int index) {
-          // Ketika icon navbar diklik, state ini akan memicu render ulang
           setState(() {
             _selectedIndex = index;
           });
