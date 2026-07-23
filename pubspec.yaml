@@ -39,6 +39,7 @@ dependencies:
   flutter_dotenv: ^6.0.0
   getwidget: ^7.0.0
   dio: ^5.10.0
+  image_picker: ^1.2.3
 
 dev_dependencies:
   flutter_test:

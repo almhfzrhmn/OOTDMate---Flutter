@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ootdmate_frontend/core/theme/app_theme.dart';
+import 'package:ootdmate_frontend/screens/core/uploads/camera_screen.dart';
 
 class BottomNavCurvePainter extends CustomPainter {
   Color backgroundColor;
@@ -80,7 +81,10 @@ class CustomNavBarCurved extends StatelessWidget {
               backgroundColor: primaryColor,
               elevation: 0.1,
               onPressed: () {
-                // Define action for FAB here
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CameraScreen(),),
+                );
               },
               child: const Icon(
                 Icons.camera,
