@@ -6,7 +6,7 @@ import 'package:ootdmate_frontend/widgets/app_header.dart';
 import 'package:ootdmate_frontend/screens/core/wardrobes/wardrobe_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, UserModel? userProfile});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
