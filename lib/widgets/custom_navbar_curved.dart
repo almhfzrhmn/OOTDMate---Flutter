@@ -106,8 +106,8 @@ class CustomNavBarCurved extends StatelessWidget {
                   selectedColor: primaryColor,
                 ),
                 NavBarIcon(
-                  text: "Search",
-                  icon: CupertinoIcons.search,
+                  text: "Wardrobe",
+                  icon: Icons.collections_sharp,
                   selected: currentIndex == 1,
                   onPressed: () => onTap(1),
                   defaultColor: secondaryColor,
