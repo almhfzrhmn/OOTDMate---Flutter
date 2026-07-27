@@ -20,6 +20,9 @@ class AppTheme {
   static const Color glitchMagenta = Color(0xFFFF007A);
   static const Color textPrimary = Color(0xFFF2F2F2);
   static const Color textSecondary = Color(0xFF8C8C8C);
+  static const Color cyberPurple = Color(0xFF8A2BE2);
+  static const Color electricAmber = Color(0xFFFFB800);
+  static const Color deepTeal = Color(0xFF00B4D8);
 
   // STATE COLORS
   static const Color error = Color(0xFFEA2115);
