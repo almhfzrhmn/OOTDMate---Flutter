@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ootdmate_frontend/screens/core/main_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/constants/api_constants.dart';

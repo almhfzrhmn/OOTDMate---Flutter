@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -8,7 +7,9 @@ import 'package:ootdmate_frontend/models/wardrobe_item_model.dart';
 class WardrobeItemService {
   final DioClient _dioClient = DioClient();
 
-  // GET WARDROBE ITEMS
+  // ──────────────────────────────────────────────
+  // GET WARDROBE ITEMS (Paginated)
+  // ──────────────────────────────────────────────
   Future<List<WardrobeItemModel>> getWardrobeItems({
     String? name,
     String? category,
@@ -17,8 +18,6 @@ class WardrobeItemService {
     try {
       final response = await _dioClient.dio.get(
         '/wardrobe/items',
-
-        // SEND QUERY PARAMETER (E.G : ?category='footwear')
         queryParameters: {
           'category': ?category,
           'name': ?name,
@@ -34,7 +33,6 @@ class WardrobeItemService {
         return WardrobeItemModel.fromJson(json);
       }).toList();
 
-      // RETURN
       return wardrobeList;
     } on DioException catch (e) {
       if (kDebugMode) {
@@ -44,8 +42,11 @@ class WardrobeItemService {
     }
   }
 
-
-  // UPLOAD WARDROBE ITEMS
+  // ──────────────────────────────────────────────
+  // UPLOAD WARDROBE ITEM (Step 1: Image + ML Classification)
+  // Sends image to backend for ML classification & storage.
+  // Returns WardrobeItemModel with category & confidence filled by backend.
+  // ──────────────────────────────────────────────
   Future<WardrobeItemModel> uploadWardrobeItems({
     required File imageFile,
     String? name,
@@ -54,33 +55,67 @@ class WardrobeItemService {
     String? notes,
   }) async {
     try {
-    // TAKE FILENAME FROM PATH
-    String filename = imageFile.path.split('/').last;
+      // Take filename from path
+      String filename = imageFile.path.split('/').last;
 
-    // WRAP INTO MULTI-FORM DATA
-    FormData formData = FormData.fromMap({
-      'image' : await MultipartFile.fromFile(
-        imageFile.path,
-        filename: filename
-      ),
-      if (name != null && name.isNotEmpty) 'name' : name,
-      if(brand != null && brand.isNotEmpty) 'brand' : brand,
-      if(color != null && color.isNotEmpty) 'color' : color,
-      if(notes != null && notes.isNotEmpty) 'notes' : notes
-    });
+      // Wrap into multi-form data
+      FormData formData = FormData.fromMap({
+        'image': await MultipartFile.fromFile(
+          imageFile.path,
+          filename: filename,
+        ),
+        if (name != null && name.isNotEmpty) 'name': name,
+        if (brand != null && brand.isNotEmpty) 'brand': brand,
+        if (color != null && color.isNotEmpty) 'color': color,
+        if (notes != null && notes.isNotEmpty) 'notes': notes,
+      });
 
-    final response = await _dioClient.dio.post(
-      '/wardrobe/items',
-      data: formData
-    );
+      final response = await _dioClient.dio.post(
+        '/wardrobe/items',
+        data: formData,
+      );
 
-    // CONVERT RESPONSE FROM SERVER TO MODEL
-    return WardrobeItemModel.fromJson(response.data);
+      // Convert response from server to model
+      return WardrobeItemModel.fromJson(response.data);
     } on DioException catch (e) {
       if (kDebugMode) {
         print("Failed to upload wardrobe item : ${e.response?.data ?? e.message}");
       }
       throw Exception(e.response?.data['detail'] ?? "Failed to upload image to server");
+    }
+  }
+
+  // ──────────────────────────────────────────────
+  // UPDATE WARDROBE ITEM METADATA (Step 2: Name, Brand, Color, Notes)
+  // After ML classification, user can fill in metadata and save.
+  // Calls PUT /wardrobe/items/{itemId} on the backend.
+  // ──────────────────────────────────────────────
+  Future<WardrobeItemModel> updateWardrobeItem({
+    required String itemId,
+    String? name,
+    String? brand,
+    String? color,
+    String? notes,
+  }) async {
+    try {
+      // Build update payload — only include non-null fields
+      final Map<String, dynamic> updateData = {};
+      if (name != null) updateData['name'] = name;
+      if (brand != null) updateData['brand'] = brand;
+      if (color != null) updateData['color'] = color;
+      if (notes != null) updateData['notes'] = notes;
+
+      final response = await _dioClient.dio.put(
+        '/wardrobe/items/$itemId',
+        data: updateData,
+      );
+
+      return WardrobeItemModel.fromJson(response.data);
+    } on DioException catch (e) {
+      if (kDebugMode) {
+        print("Failed to update wardrobe item : ${e.response?.data ?? e.message}");
+      }
+      throw Exception(e.response?.data['detail'] ?? "Failed to update item metadata");
     }
   }
 }
