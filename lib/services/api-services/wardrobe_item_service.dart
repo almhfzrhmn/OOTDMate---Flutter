@@ -42,11 +42,6 @@ class WardrobeItemService {
     }
   }
 
-  // ──────────────────────────────────────────────
-  // UPLOAD WARDROBE ITEM (Step 1: Image + ML Classification)
-  // Sends image to backend for ML classification & storage.
-  // Returns WardrobeItemModel with category & confidence filled by backend.
-  // ──────────────────────────────────────────────
   Future<WardrobeItemModel> uploadWardrobeItems({
     required File imageFile,
     String? name,

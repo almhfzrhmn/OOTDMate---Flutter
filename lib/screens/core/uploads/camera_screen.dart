@@ -11,6 +11,7 @@ import 'package:ootdmate_frontend/widgets/clothing_guide_overlay.dart';
 import 'package:ootdmate_frontend/widgets/color_picker_field.dart';
 import 'package:ootdmate_frontend/widgets/glass_text_field.dart';
 import 'package:ootdmate_frontend/widgets/scan_animation_widget.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 /// Step-based upload flow:
 /// 1. pickImage   — User memilih sumber gambar (kamera / galeri)
@@ -238,7 +239,7 @@ class _CameraScreenState extends State<CameraScreen> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              centerTitle: true,
+              centerTitle: false,
             )
           : null,
       body: SafeArea(
@@ -255,7 +256,7 @@ class _CameraScreenState extends State<CameraScreen> {
   String get _appBarTitle {
     switch (_currentStep) {
       case UploadStep.pickImage:
-        return 'Tambah Pakaian';
+        return 'Add Items';
       case UploadStep.reviewGuide:
         return 'Review Foto';
       case UploadStep.scanning:
@@ -284,64 +285,90 @@ class _CameraScreenState extends State<CameraScreen> {
   Widget _buildPickImageStep() {
     return Center(
       key: const ValueKey('pickImage'),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: SafeArea(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            // Icon besar
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppTheme.surface,
-                border: Border.all(
-                  color: AppTheme.neonBlue.withAlpha(40),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      height: 220,
+                      decoration: BoxDecoration(
+                        color: AppTheme.secondary,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 68,
+                            height: 68,
+                            decoration: BoxDecoration(
+                              color: AppTheme.textPrimary,
+                              shape: BoxShape.circle
+                            ),
+                            child: Icon(Icons.upload, color: AppTheme.surface, size: 34),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            "Upload Image",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0
+                            ),
+                          ),
+                          Text(
+                            "Max. file size : 10MB",
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: _buildActionButton(
+                            icon: Icons.camera_enhance,
+                            label: "Camera",
+                            color: AppTheme.acidGreen,
+                            onTap: () => _pickImage(ImageSource.camera),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _buildActionButton(
+                            icon: Icons.folder,
+                            label: "Gallery",
+                            color: AppTheme.cyberPurple,
+                            onTap: () => _pickImage(ImageSource.gallery),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 60),
+                    Container(
+                      width: double.infinity,
+                      constraints: const BoxConstraints(
+                        minHeight: 200,
+                        maxHeight: 260,
+                      ),
+                      alignment: Alignment.bottomCenter,
+                      child: SvgPicture.asset(
+                        'assets/images/bro.svg',
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: Icon(
-                Icons.checkroom_rounded,
-                size: 56,
-                color: AppTheme.neonBlue.withAlpha(180),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Tambah Pakaian Baru',
-              style: GoogleFonts.poppins(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Ambil foto atau pilih dari galeri untuk\nmenganalisis pakaian kamu dengan AI',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 14,
-                color: AppTheme.textSecondary,
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: 40),
-
-            // Tombol Kamera
-            _buildActionButton(
-              icon: Icons.camera_alt_rounded,
-              label: 'Buka Kamera',
-              color: AppTheme.neonBlue,
-              onTap: () => _pickImage(ImageSource.camera),
-            ),
-            const SizedBox(height: 14),
-
-            // Tombol Galeri
-            _buildActionButton(
-              icon: Icons.photo_library_rounded,
-              label: 'Pilih dari Galeri',
-              color: AppTheme.glitchMagenta,
-              onTap: () => _pickImage(ImageSource.gallery),
-            ),
+            )
           ],
         ),
       ),
@@ -361,9 +388,9 @@ class _CameraScreenState extends State<CameraScreen> {
         borderRadius: BorderRadius.circular(16),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 18),
+          padding: const EdgeInsets.symmetric(vertical: 14),
           decoration: BoxDecoration(
-            color: AppTheme.surface,
+            color: AppTheme.surface.withAlpha(50),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: color.withAlpha(40),
