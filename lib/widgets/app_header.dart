@@ -1,6 +1,8 @@
 import "package:flutter/material.dart";
 import "package:ootdmate_frontend/core/theme/app_theme.dart";
 import "package:ootdmate_frontend/models/user_model.dart";
+import "package:ootdmate_frontend/services/auth-services/auth_services.dart";
+import 'package:ootdmate_frontend/widgets/modals/profile_dialog.dart';
 
 class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -60,7 +62,16 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
             ),
             if (showAvatar)
               GestureDetector(
-                onTap: onProfileTap,
+                onTap: () {
+                  if (onProfileTap != null) {
+                    onProfileTap!();
+                  } else {
+                    showDialog(
+                      context: context,
+                      builder: (context) => ProfileDialog(user: currentUser),
+                    );
+                  }
+                },
                 child: CircleAvatar(
                   radius: 30,
                   backgroundColor: AppTheme.secondary,

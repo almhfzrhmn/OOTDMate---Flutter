@@ -1,11 +1,10 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ootdmate_frontend/core/theme/app_theme.dart';
 import 'package:ootdmate_frontend/models/user_model.dart';
 import 'package:ootdmate_frontend/services/api-services/wardrobe_item_service.dart';
 import 'package:ootdmate_frontend/models/wardrobe_item_model.dart';
 import 'package:ootdmate_frontend/widgets/app_header.dart';
-import 'package:ootdmate_frontend/widgets/glass_text_field.dart';
+import 'package:ootdmate_frontend/widgets/neumorphic_text_field.dart';
 
 class WardrobeScreen extends StatefulWidget {
   final UserModel? userProfile;
@@ -161,6 +160,8 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
     }
   }
 
+  // 
+
   Widget _buildCategoryButton(String category, Color color) {
     final bool selected = _selectedCategory == category;
     return ElevatedButton(
@@ -216,14 +217,14 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
                 children: [
                   Expanded(
                     child: SizedBox(
-                      height: 50,
-                      child: GlassTextField(
-                        hintText: "Search ...",
+                      height: 40,
+                      child: NeumorphicTextField(
+                        hintText: "Search",
                         controller: _searchController,
                         prefixIcon: Icons.search,
                         textInputAction: TextInputAction.search,
-                        onSubmitted: (query) {
-                          _fetchData(nameQuery: _searchController.text);
+                        onSubmitted: (query) => {
+                          _fetchData(nameQuery: _searchController.text)
                         },
                       ),
                     ),
@@ -371,7 +372,7 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
                                           ),
                                         ),
                                         child: Text(
-                                          items.name ?? items.category,
+                                          items.name?.isNotEmpty == true ? items.name! : 'Unnamed Item',
                                           style: Theme.of(context)
                                               .textTheme
                                               .bodyMedium

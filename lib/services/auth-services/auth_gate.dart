@@ -1,20 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:ootdmate_frontend/screens/core/main_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ootdmate_frontend/screens/auth/login_screen.dart';
 import 'package:ootdmate_frontend/screens/core/home/home_screen.dart';
 
-class AuthGate extends StatelessWidget {
+class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
 
+  @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  late final Stream<AuthState> _authStateStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _authStateStream = Supabase.instance.client.auth.onAuthStateChange;
+  }
+  
   @override
   Widget build(BuildContext context) {
     final supabase = Supabase.instance.client;
     return StreamBuilder<AuthState>(
-      initialData: AuthState(
-        AuthChangeEvent.initialSession,
-        supabase.auth.currentSession,
-      ),
-      stream: supabase.auth.onAuthStateChange,
+      stream: _authStateStream,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const LoginScreen();
@@ -30,8 +40,9 @@ class AuthGate extends StatelessWidget {
         final session = snapshot.data?.session ?? supabase.auth.currentSession;
 
         if (session != null) {
-          // return const WardrobeScreen();
-          return const HomeScreen();
+          // return BottomNavbar();
+          // return const HomeScreen();
+          return MainScreen();
         } else {
           return const LoginScreen();
         }

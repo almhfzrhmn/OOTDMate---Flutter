@@ -47,3 +47,4 @@ app.*.map.json
 .env
 tes.html
 lib\test_screen.dart
+PRD.md
