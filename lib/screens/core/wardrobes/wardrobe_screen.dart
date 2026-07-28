@@ -160,6 +160,8 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
     }
   }
 
+  // 
+
   Widget _buildCategoryButton(String category, Color color) {
     final bool selected = _selectedCategory == category;
     return ElevatedButton(
@@ -370,7 +372,7 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
                                           ),
                                         ),
                                         child: Text(
-                                          items.name ?? items.category,
+                                          items.name?.isNotEmpty == true ? items.name! : 'Unnamed Item',
                                           style: Theme.of(context)
                                               .textTheme
                                               .bodyMedium
