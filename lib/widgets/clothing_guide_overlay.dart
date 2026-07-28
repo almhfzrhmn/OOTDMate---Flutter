@@ -56,12 +56,13 @@ class ClothingGuideOverlay extends StatelessWidget {
                     ),
                   ),
                   child: const Text(
-                    'Posisikan pakaian di dalam area',
+                    'Position the clothing within the designated area.',
                     style: TextStyle(
                       color: AppTheme.textSecondary,
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                     ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
                 const Spacer(flex: 1),

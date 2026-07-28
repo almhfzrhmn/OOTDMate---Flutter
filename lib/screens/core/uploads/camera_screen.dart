@@ -65,7 +65,8 @@ class _CameraScreenState extends State<CameraScreen> {
     try {
       final XFile? pickedFile = await _imagePicker.pickImage(
         source: source,
-        imageQuality: 85,
+        imageQuality: 70,
+        maxHeight: 1080,
       );
 
       if (pickedFile != null) {
@@ -258,11 +259,11 @@ class _CameraScreenState extends State<CameraScreen> {
       case UploadStep.pickImage:
         return 'Add Items';
       case UploadStep.reviewGuide:
-        return 'Review Foto';
+        return 'Review';
       case UploadStep.scanning:
         return '';
       case UploadStep.result:
-        return 'Hasil Analisis';
+        return 'Analyze Result';
     }
   }
 
@@ -458,7 +459,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
             // Info text
             Text(
-              'Pastikan pakaian terlihat jelas di dalam area',
+              'Make sure the clothing is clearly visible within the area.',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 13,
                 color: AppTheme.textSecondary,
@@ -472,7 +473,7 @@ class _CameraScreenState extends State<CameraScreen> {
               child: OutlinedButton.icon(
                 onPressed: _goBack,
                 icon: const Icon(Icons.refresh_rounded, size: 18),
-                label: const Text('Ganti Foto'),
+                label: const Text('Change Picture'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppTheme.textSecondary,
                   side: BorderSide(
@@ -494,16 +495,15 @@ class _CameraScreenState extends State<CameraScreen> {
                 onPressed: _uploadAndClassify,
                 icon: const Icon(Icons.auto_awesome, size: 18),
                 label: Text(
-                  'Analisis dengan AI',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  'Analyze with AI',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: AppTheme.primary
+                  )
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.neonBlue,
+                  backgroundColor: AppTheme.acidGreen,
                   foregroundColor: AppTheme.primary,
-                  fixedSize: null,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.all(10),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -726,7 +726,7 @@ class _CameraScreenState extends State<CameraScreen> {
                 backgroundColor: AppTheme.acidGreen,
                 foregroundColor: AppTheme.primary,
                 fixedSize: null,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.all(5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),

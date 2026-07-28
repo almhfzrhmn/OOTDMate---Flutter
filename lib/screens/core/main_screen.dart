@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ootdmate_frontend/models/user_model.dart';
-import 'package:ootdmate_frontend/screens/core/uploads/camera_screen.dart';
+import 'package:ootdmate_frontend/screens/core/favorite/favorite_screen.dart';
+import 'package:ootdmate_frontend/screens/core/recommendation/recommendation_screen.dart';
 import 'package:ootdmate_frontend/services/auth-services/auth_services.dart';
 import 'package:ootdmate_frontend/widgets/custom_navbar_curved.dart';
 
@@ -39,7 +40,8 @@ class _MainScreenState extends State<MainScreen> {
   List<Widget> get _pages => [
     HomeScreen(userProfile : _userProfile),
     WardrobeScreen(userProfile: _userProfile),
-    CameraScreen(),
+    RecommendationScreen(),
+    FavoriteScreen()
   ];
 
   @override
