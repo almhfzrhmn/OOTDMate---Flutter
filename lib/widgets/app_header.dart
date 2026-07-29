@@ -1,7 +1,6 @@
 import "package:flutter/material.dart";
 import "package:ootdmate_frontend/core/theme/app_theme.dart";
 import "package:ootdmate_frontend/models/user_model.dart";
-import "package:ootdmate_frontend/services/auth-services/auth_services.dart";
 import 'package:ootdmate_frontend/widgets/modals/profile_dialog.dart';
 
 class AppHeader extends StatelessWidget implements PreferredSizeWidget {

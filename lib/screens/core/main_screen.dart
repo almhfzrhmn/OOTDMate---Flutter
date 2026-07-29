@@ -38,8 +38,8 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   List<Widget> get _pages => [
-    HomeScreen(userProfile : _userProfile),
-    WardrobeScreen(userProfile: _userProfile),
+    HomeScreen(userProfile: _userProfile, avatarUrl: _userProfile?.avatarUrl),
+    WardrobeScreen(userProfile: _userProfile, avatarUrl: _userProfile?.avatarUrl),
     RecommendationScreen(),
     FavoriteScreen()
   ];

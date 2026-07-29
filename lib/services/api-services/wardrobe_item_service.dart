@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:ootdmate_frontend/core/constants/dio_client.dart';
 import 'package:ootdmate_frontend/models/wardrobe_item_model.dart';
+import 'package:ootdmate_frontend/models/wardrobe_stats_model.dart';
 
 class WardrobeItemService {
   final DioClient _dioClient = DioClient();
@@ -125,6 +126,22 @@ class WardrobeItemService {
         print("Failed to delete wardrobe item : ${e.response?.data ?? e.message}");
       }
       throw Exception(e.response?.data['detail'] ?? "Failed to delete item");
+    }
+  }
+
+  // ──────────────────────────────────────────────
+  // GET WARDROBE STATS (Total items + Category breakdown)
+  // Calls GET /wardrobe/stats on the backend.
+  // ──────────────────────────────────────────────
+  Future<WardrobeStatsModel> getWardrobeStats() async {
+    try {
+      final response = await _dioClient.dio.get('/wardrobe/stats');
+      return WardrobeStatsModel.fromJson(response.data);
+    } on DioException catch (e) {
+      if (kDebugMode) {
+        print("Failed to get wardrobe stats : ${e.response?.data ?? e.message}");
+      }
+      throw Exception("Failed to load wardrobe statistics");
     }
   }
 }
