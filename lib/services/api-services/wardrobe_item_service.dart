@@ -113,4 +113,18 @@ class WardrobeItemService {
       throw Exception(e.response?.data['detail'] ?? "Failed to update item metadata");
     }
   }
+
+  // ──────────────────────────────────────────────
+  // DELETE WARDROBE ITEM
+  // ──────────────────────────────────────────────
+  Future<void> deleteWardrobeItem(String itemId) async {
+    try {
+      await _dioClient.dio.delete('/wardrobe/items/$itemId');
+    } on DioException catch (e) {
+      if (kDebugMode) {
+        print("Failed to delete wardrobe item : ${e.response?.data ?? e.message}");
+      }
+      throw Exception(e.response?.data['detail'] ?? "Failed to delete item");
+    }
+  }
 }

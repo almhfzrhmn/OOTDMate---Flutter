@@ -327,13 +327,23 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
                         final items = wardrobeList[index];
 
                         return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
+                          onTap: () async {
+                            final result = await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => ItemDetailsScreen(item: items),
                               ),
                             );
+                            // Refresh data if item was edited or deleted
+                            if (result == true) {
+                              _fetchData(
+                                nameQuery: _searchController.text.isEmpty
+                                    ? null
+                                    : _searchController.text,
+                                category: _selectedCategory,
+                                sortDesc: _sortDescending,
+                              );
+                            }
                           },
                           child: Card(
                             shape: RoundedRectangleBorder(
@@ -414,7 +424,7 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
                                     children: [
                                       Expanded(
                                         child: Text(
-                                          items.name ?? items.category,
+                                          items.category,
                                           style: Theme.of(context)
                                               .textTheme
                                               .bodySmall

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ootdmate_frontend/core/theme/app_theme.dart';
 import 'package:ootdmate_frontend/models/wardrobe_item_model.dart';
+import 'package:ootdmate_frontend/widgets/modals/edit_item_modal.dart';
 
 class ItemDetailsScreen extends StatelessWidget {
   final WardrobeItemModel item;
@@ -43,11 +44,22 @@ class ItemDetailsScreen extends StatelessWidget {
                 child: IconButton(
                   icon: const Icon(Icons.edit_outlined, color: AppTheme.textPrimary),
                   tooltip: "Edit Metadata",
-                  onPressed: () {
-                    // TODO: Akan dihubungkan ke fitur Edit/Delete pada step berikutnya
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Fitur Edit akan segera aktif!")),
+                  onPressed: () async {
+                    // Tampilkan EditItemModal
+                    final result = await showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true, // Memungkinkan modal membesar saat keyboard muncul
+                      backgroundColor: Colors.transparent,
+                      builder: (context) => EditItemModal(item: item),
                     );
+
+                    // Jika item telah dihapus atau diperbarui, 
+                    // pop kembali ke WardrobeScreen sambil membawa data result
+                    if (result == 'deleted' || result == 'saved') {
+                      if (context.mounted) {
+                        Navigator.of(context).pop(true); // true menandakan WardrobeScreen harus refresh
+                      }
+                    }
                   },
                 ),
               ),
@@ -110,18 +122,7 @@ class ItemDetailsScreen extends StatelessWidget {
                 ),
               ),
             ),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 12.0, top: 8.0, bottom: 8.0),
-                child: CircleAvatar(
-                  backgroundColor: AppTheme.primary.withAlpha(180),
-                  child: IconButton(
-                    icon: const Icon(Icons.share_outlined, color: AppTheme.textPrimary, size: 20),
-                    onPressed: () {},
-                  ),
-                ),
-              ),
-            ],
+            
             flexibleSpace: FlexibleSpaceBar(
               stretchModes: const [
                 StretchMode.zoomBackground,
@@ -142,7 +143,6 @@ class ItemDetailsScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // GRADIENT OVERLAY agar teks kembali & shadow terlihat elegan
                   DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -162,9 +162,6 @@ class ItemDetailsScreen extends StatelessWidget {
             ),
           ),
 
-          // ──────────────────────────────────────────────────────────────────────
-          // 3. SLIVER TO BOX ADAPTER — Konten Spesifikasi / Detail Pakaian
-          // ──────────────────────────────────────────────────────────────────────
           SliverToBoxAdapter(
             child: Transform.translate(
               offset: const Offset(0, -28), // Mengapit sedikit ke atas foto
