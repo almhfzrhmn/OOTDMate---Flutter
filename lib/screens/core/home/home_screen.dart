@@ -6,16 +6,6 @@ import 'package:ootdmate_frontend/services/api-services/wardrobe_item_service.da
 import 'package:ootdmate_frontend/widgets/app_header.dart';
 import 'package:ootdmate_frontend/widgets/charts/wardrobe_donut_chart.dart';
 
-// ─────────────────────────────────────────────
-// HOME SCREEN — Dashboard Utama OOTDMate
-//
-// Menampilkan:
-// 1. Greeting di AppHeader (existing, tidak diubah)
-// 2. Donut chart komposisi wardrobe
-// 3. Quick Action cards (Add Clothing & OOTD Generator)
-// 4. Category breakdown bars
-// ─────────────────────────────────────────────
-
 class HomeScreen extends StatefulWidget {
   // Menerima data user dari MainScreen (bukan load sendiri!)
   final UserModel? userProfile;
@@ -71,7 +61,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final String? avatarUrl = widget.avatarUrl ?? widget.userProfile?.avatarUrl;
 
     return Scaffold(
-      // AppHeader TIDAK DIUBAH — tetap sama seperti sebelumnya
       appBar: AppHeader(
         title: "Hi, ${name[0].toUpperCase() + name.substring(1)}",
         subTitle: "Let's create your stylish look for today",
@@ -129,99 +118,117 @@ class _HomeScreenState extends State<HomeScreen> {
     final stats = _stats ?? WardrobeStatsModel.empty();
 
     // Pakai ListView agar bisa pull-to-refresh dan scroll
-    return ListView(
-      physics: const AlwaysScrollableScrollPhysics(
-        parent: BouncingScrollPhysics(),
-      ),
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+    return Column(
       children: [
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // SECTION 1: WARDROBE OVERVIEW (Donut Chart)
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        _buildSectionTitle(context, icon: Icons.pie_chart_outline, title: "WARDROBE OVERVIEW"),
-        const SizedBox(height: 16),
-
-        // Container dengan background gelap untuk donut chart
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
-          decoration: BoxDecoration(
-            color: AppTheme.secondary,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppTheme.textSecondary.withAlpha(20)),
-          ),
-          child: WardrobeDonutChart(
-            categories: stats.categories,
-            totalItems: stats.totalItems,
+        // Container(
+        //   height: 180,
+        //   width : double.infinity,
+        //   decoration: BoxDecoration(
+        //     color : AppTheme.primarySecond,
+        //     shape : BoxShape.circle,
+        //   ),
+        //   child: Center(child: Text(
+        //     "Tes tambah kolom"
+        //   ),
+        //   ),
+        // ),
+        Expanded(
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
+            ),
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+            children: [
+              // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+              // SECTION 1: WARDROBE OVERVIEW (Donut Chart)
+              // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+              _buildSectionTitle(context, icon: Icons.pie_chart_outline, title: "WARDROBE OVERVIEW"),
+              const SizedBox(height: 16),
+          
+              // Container dengan background gelap untuk donut chart
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: AppTheme.secondary,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: AppTheme.textSecondary.withAlpha(20)),
+                ),
+                child: WardrobeDonutChart(
+                  categories: stats.categories,
+                  totalItems: stats.totalItems,
+                ),
+              ),
+          
+              const SizedBox(height: 28),
+          
+              // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+              // SECTION 2: QUICK ACTIONS
+              // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+              _buildSectionTitle(context, icon: Icons.bolt, title: "QUICK ACTIONS"),
+              const SizedBox(height: 16),
+          
+              Row(
+                children: [
+                  // Kartu 1: Add Clothing
+                  Expanded(
+                    child: _QuickActionCard(
+                      icon: Icons.add_a_photo_outlined,
+                      label: "Add Clothing",
+                      description: "Upload & classify",
+                      accentColor: AppTheme.acidGreen,
+                      onTap: () {
+                        // TODO: Navigasi ke upload screen
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Upload feature coming soon!")),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  // Kartu 2: OOTD Generator
+                  Expanded(
+                    child: _QuickActionCard(
+                      icon: Icons.auto_awesome,
+                      label: "OOTD Generator",
+                      description: "AI outfit matcher",
+                      accentColor: AppTheme.glitchMagenta,
+                      onTap: () {
+                        // TODO: Navigasi ke OOTD Generator (F-03.2 PRD)
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("OOTD Generator coming soon!")),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+          
+              const SizedBox(height: 28),
+          
+              // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+              // SECTION 3: CATEGORY BREAKDOWN (Progress Bars)
+              // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+              _buildSectionTitle(context, icon: Icons.bar_chart, title: "CATEGORY BREAKDOWN"),
+              const SizedBox(height: 16),
+          
+              if (stats.totalItems == 0)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Text(
+                    "No data yet. Start adding clothes!",
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                )
+              else
+                ..._buildCategoryBars(context, stats),
+          
+              const SizedBox(height: 20),
+            ],
           ),
         ),
-
-        const SizedBox(height: 28),
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // SECTION 2: QUICK ACTIONS
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        _buildSectionTitle(context, icon: Icons.bolt, title: "QUICK ACTIONS"),
-        const SizedBox(height: 16),
-
-        Row(
-          children: [
-            // Kartu 1: Add Clothing
-            Expanded(
-              child: _QuickActionCard(
-                icon: Icons.add_a_photo_outlined,
-                label: "Add Clothing",
-                description: "Upload & classify",
-                accentColor: AppTheme.acidGreen,
-                onTap: () {
-                  // TODO: Navigasi ke upload screen
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Upload feature coming soon!")),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(width: 14),
-            // Kartu 2: OOTD Generator
-            Expanded(
-              child: _QuickActionCard(
-                icon: Icons.auto_awesome,
-                label: "OOTD Generator",
-                description: "AI outfit matcher",
-                accentColor: AppTheme.glitchMagenta,
-                onTap: () {
-                  // TODO: Navigasi ke OOTD Generator (F-03.2 PRD)
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("OOTD Generator coming soon!")),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 28),
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // SECTION 3: CATEGORY BREAKDOWN (Progress Bars)
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        _buildSectionTitle(context, icon: Icons.bar_chart, title: "CATEGORY BREAKDOWN"),
-        const SizedBox(height: 16),
-
-        if (stats.totalItems == 0)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            child: Text(
-              "No data yet. Start adding clothes!",
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppTheme.textSecondary,
-              ),
-            ),
-          )
-        else
-          ..._buildCategoryBars(context, stats),
-
-        const SizedBox(height: 20),
       ],
     );
   }

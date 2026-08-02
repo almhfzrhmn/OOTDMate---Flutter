@@ -24,6 +24,9 @@ class DioClient {
           if(token != null) {
             options.headers['Authorization'] = 'Bearer $token';
           }
+          if(kDebugMode) {
+            print("Request API : ${options.method} ${options.uri}");
+          }
 
           return handler.next(options);
         },

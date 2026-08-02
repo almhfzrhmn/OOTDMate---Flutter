@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ootdmate_frontend/core/theme/app_theme.dart';
 
-/// Widget animasi scanning yang menampilkan garis neon bergerak naik-turun
-/// di atas gambar, dengan efek glow dan pulse border.
-/// 
-/// Digunakan saat menunggu response ML classification dari backend.
 class ScanAnimationWidget extends StatefulWidget {
   /// Widget gambar yang akan di-scan (biasanya Image.file)
   final Widget imageWidget;
