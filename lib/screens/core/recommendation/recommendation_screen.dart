@@ -5,20 +5,6 @@ import 'package:ootdmate_frontend/models/recommendation_model.dart';
 import 'package:ootdmate_frontend/services/api-services/wardrobe_item_service.dart';
 import 'package:ootdmate_frontend/services/api-services/recommendation_service.dart';
 
-// ─────────────────────────────────────────────
-// RECOMMENDATION SCREEN — AI OOTD Matcher
-//
-// Layar ini punya 3 STATE:
-// 1. ANCHOR SELECTION → User memilih 1 pakaian acuan
-// 2. LOADING          → Animasi saat AI bekerja
-// 3. OUTFIT RESULT    → Tampilkan hasil outfit + skor kecocokan
-//
-// Alur:
-// User pilih baju → AI cari padanan → Tampilkan hasil
-//                                    → Shuffle (ganti kombinasi lokal)
-//                                    → Save outfit ke backend
-// ─────────────────────────────────────────────
-
 class RecommendationScreen extends StatefulWidget {
   const RecommendationScreen({super.key});
 
