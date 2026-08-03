@@ -23,87 +23,116 @@ class WardrobeScreen extends StatefulWidget {
 class _WardrobeScreenState extends State<WardrobeScreen> {
   final WardrobeItemService _wardrobeItemService = WardrobeItemService();
 
-  List<WardrobeItemModel> _allWardrobeItems = [];
-  List<WardrobeItemModel> _filteredItems = [];
+  List<WardrobeItemModel> _wardrobeItems = [];
   
   bool _isLoading = true;
+  bool _isFetchingMore = false;
   String? _errorMessage;
+
+  // Pagination
+  int _currentPage = 1;
+  final int _limit = 20;
+  bool _hasMore = true;
+  final ScrollController _scrollController = ScrollController();
 
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
   
   String? _selectedCategory;
-  bool _sortDescending = true; // newest first by reversing the list
-  final Set<String> _categories = {};
+  bool _sortDescending = true;
+  final Set<String> _categories = {'Topwear', 'Bottomwear', 'Footwear', 'Outerwear', 'Accessories'}; // Provide some defaults to show
 
   @override
   void initState() {
     super.initState();
-    _fetchData();
+    _scrollController.addListener(_onScroll);
+    _fetchData(); // Load first page
   }
   
   @override
   void dispose() {
+    _scrollController.dispose();
     _searchController.dispose();
     _debounce?.cancel();
     super.dispose();
   }
 
-  Future<void> _fetchData() async {
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      _fetchNextPage();
+    }
+  }
+
+  Future<void> _fetchData({bool refresh = false}) async {
+    if (refresh) {
+      _currentPage = 1;
+      _hasMore = true;
+    }
+
     setState(() {
-      _isLoading = true;
+      if (refresh) {
+        _isLoading = true;
+      } else {
+        _isFetchingMore = true;
+      }
       _errorMessage = null;
     });
 
     try {
-      final list = await _wardrobeItemService.getWardrobeItems();
-      _categories.clear();
+      final list = await _wardrobeItemService.getWardrobeItems(
+        page: _currentPage,
+        limit: _limit,
+        name: _searchController.text.trim().isNotEmpty ? _searchController.text.trim() : null,
+        category: _selectedCategory,
+      );
+      
+      // Reverse if sorting by oldest first (assuming backend returns newest first by default)
+      final processedList = _sortDescending ? list : list.reversed.toList();
+
       for (final it in list) {
         if (it.category.isNotEmpty) _categories.add(it.category);
       }
       
-      _allWardrobeItems = list;
-      _applyLocalFilter(); // Will update _filteredItems and _isLoading = false
+      setState(() {
+        if (refresh) {
+          _wardrobeItems = processedList;
+        } else {
+          _wardrobeItems.addAll(processedList);
+        }
+        
+        // If the backend returns fewer items than the limit, we've reached the end
+        if (list.length < _limit) {
+          _hasMore = false;
+        } else {
+          _currentPage++;
+        }
+        
+        _isLoading = false;
+        _isFetchingMore = false;
+      });
     } catch (e) {
       setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
+        if (refresh) {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        } else {
+          _isFetchingMore = false;
+          // Optionally show a toast for load more failure
+        }
       });
     }
   }
   
-  void _applyLocalFilter() {
-    List<WardrobeItemModel> results = List.from(_allWardrobeItems);
-    
-    // 1. Filter by Search Query
-    final query = _searchController.text.trim().toLowerCase();
-    if (query.isNotEmpty) {
-      results = results.where((item) => 
-        (item.name?.toLowerCase().contains(query) ?? false) || 
-        item.category.toLowerCase().contains(query)
-      ).toList();
+  void _fetchNextPage() {
+    if (_hasMore && !_isLoading && !_isFetchingMore) {
+      _fetchData();
     }
-    
-    // 2. Filter by Category
-    if (_selectedCategory != null) {
-      results = results.where((item) => item.category == _selectedCategory).toList();
-    }
-    
-    // 3. Sort
-    if (_sortDescending) {
-      results = results.reversed.toList();
-    }
-    
-    setState(() {
-      _filteredItems = results;
-      _isLoading = false;
-    });
   }
   
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 300), () {
-      _applyLocalFilter();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      _fetchData(refresh: true);
     });
   }
 
@@ -133,7 +162,7 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
                   ),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<String?>(
-                    value: tempCategory,
+                    initialValue: tempCategory,
                     items: [
                       const DropdownMenuItem<String?>(
                         value: null,
@@ -205,7 +234,7 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
     if (result != null) {
       _selectedCategory = result['category'] as String?;
       _sortDescending = result['sortDesc'] as bool? ?? _sortDescending;
-      _applyLocalFilter();
+      _fetchData(refresh: true);
     }
   }
 
@@ -219,7 +248,7 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
             // Toggle off if already selected
             _selectedCategory = selected ? null : category;
           });
-          _applyLocalFilter();
+          _fetchData(refresh: true);
         },
         style: ElevatedButton.styleFrom(
           minimumSize: const Size(100, 17),
@@ -271,7 +300,7 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
                         controller: _searchController,
                         prefixIcon: Icons.search,
                         textInputAction: TextInputAction.search,
-                        onChanged: _onSearchChanged, // Replaced onSubmitted with onChanged for debounce
+                        onChanged: _onSearchChanged,
                       ),
                     ),
                   ),
@@ -311,13 +340,15 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
                     : _errorMessage != null
                         ? WardrobeErrorState(
                             errorMessage: _errorMessage!,
-                            onRetry: _fetchData,
+                            onRetry: () => _fetchData(refresh: true),
                           )
-                        : _filteredItems.isEmpty
+                        : _wardrobeItems.isEmpty
                             ? const WardrobeEmptyState()
                             : MasonryGridViewWidget(
-                                items: _filteredItems,
-                                onRefreshNeeded: _fetchData,
+                                items: _wardrobeItems,
+                                controller: _scrollController,
+                                isFetchingMore: _isFetchingMore,
+                                onRefreshNeeded: () => _fetchData(refresh: true),
                               ),
               ),
             ],

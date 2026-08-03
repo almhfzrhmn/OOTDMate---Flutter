@@ -15,14 +15,18 @@ class WardrobeItemService {
     String? name,
     String? category,
     String? color,
+    int page = 1,
+    int limit = 20,
   }) async {
     try {
       final response = await _dioClient.dio.get(
         '/wardrobe/items',
         queryParameters: {
-          'category': ?category,
-          'name': ?name,
-          'color': ?color,
+          'category': category,
+          'name': name,
+          'color': color,
+          'page': page,
+          'limit': limit,
         },
       );
 

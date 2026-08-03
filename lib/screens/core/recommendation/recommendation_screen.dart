@@ -27,7 +27,12 @@ class _RecommendationScreenState extends State<RecommendationScreen>
   // State 1: Wardrobe items untuk dipilih
   List<WardrobeItemModel> _wardrobeItems = [];
   bool _isLoadingWardrobe = true;
+  bool _isFetchingMoreWardrobe = false;
   String? _wardrobeError;
+  int _currentPage = 1;
+  final int _limit = 20;
+  bool _hasMore = true;
+  final ScrollController _scrollController = ScrollController();
 
   // State 3: Hasil rekomendasi
   RecommendationResponseModel? _result;
@@ -51,12 +56,22 @@ class _RecommendationScreenState extends State<RecommendationScreen>
       duration: const Duration(milliseconds: 1200),
     )..repeat(reverse: true); // Loop maju-mundur
 
-    _loadWardrobeItems();
+    _scrollController.addListener(_onScroll);
+    _loadWardrobeItems(refresh: true);
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      if (_hasMore && !_isLoadingWardrobe && !_isFetchingMoreWardrobe) {
+        _loadWardrobeItems();
+      }
+    }
   }
 
   @override
   void dispose() {
     _pulseController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -65,19 +80,52 @@ class _RecommendationScreenState extends State<RecommendationScreen>
   // ─────────────────────────────────────────────
 
   /// Ambil semua item wardrobe user (untuk State 1: pilih anchor)
-  Future<void> _loadWardrobeItems() async {
+  Future<void> _loadWardrobeItems({bool refresh = false}) async {
+    if (refresh) {
+      _currentPage = 1;
+      _hasMore = true;
+    }
+
+    setState(() {
+      if (refresh) {
+        _isLoadingWardrobe = true;
+      } else {
+        _isFetchingMoreWardrobe = true;
+      }
+      _wardrobeError = null;
+    });
+
     try {
-      final items = await _wardrobeService.getWardrobeItems();
+      final items = await _wardrobeService.getWardrobeItems(
+        page: _currentPage,
+        limit: _limit,
+      );
       if (!mounted) return;
       setState(() {
-        _wardrobeItems = items;
+        if (refresh) {
+          _wardrobeItems = items;
+        } else {
+          _wardrobeItems.addAll(items);
+        }
+        
+        if (items.length < _limit) {
+          _hasMore = false;
+        } else {
+          _currentPage++;
+        }
+        
         _isLoadingWardrobe = false;
+        _isFetchingMoreWardrobe = false;
       });
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _isLoadingWardrobe = false;
-        _wardrobeError = e.toString();
+        if (refresh) {
+          _isLoadingWardrobe = false;
+          _wardrobeError = e.toString();
+        } else {
+          _isFetchingMoreWardrobe = false;
+        }
       });
     }
   }
@@ -230,8 +278,7 @@ class _RecommendationScreenState extends State<RecommendationScreen>
             const SizedBox(height: 8),
             TextButton.icon(
               onPressed: () {
-                setState(() { _isLoadingWardrobe = true; _wardrobeError = null; });
-                _loadWardrobeItems();
+                _loadWardrobeItems(refresh: true);
               },
               icon: const Icon(Icons.refresh),
               label: const Text("Retry"),
@@ -287,24 +334,41 @@ class _RecommendationScreenState extends State<RecommendationScreen>
           ),
         ),
 
-        // Grid (sama seperti wardrobe_screen)
         Expanded(
-          child: GridView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 0.78,
-            ),
-            itemCount: _wardrobeItems.length,
-            itemBuilder: (context, index) {
-              final item = _wardrobeItems[index];
-              return _AnchorItemCard(
-                item: item,
-                onTap: () => _requestRecommendation(item),
-              );
-            },
+          child: Column(
+            children: [
+              Expanded(
+                child: GridView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 0.78,
+                  ),
+                  itemCount: _wardrobeItems.length,
+                  itemBuilder: (context, index) {
+                    final item = _wardrobeItems[index];
+                    return _AnchorItemCard(
+                      item: item,
+                      onTap: () => _requestRecommendation(item),
+                    );
+                  },
+                ),
+              ),
+              if (_isFetchingMoreWardrobe)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16.0),
+                  child: Center(
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.glitchMagenta),
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
       ],

@@ -9,23 +9,32 @@ class MasonryGridViewWidget extends StatelessWidget {
   final List<WardrobeItemModel> items;
   final VoidCallback onRefreshNeeded;
 
+  final ScrollController? controller;
+  final bool isFetchingMore;
+
   const MasonryGridViewWidget({
     super.key,
     required this.items,
     required this.onRefreshNeeded,
+    this.controller,
+    this.isFetchingMore = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return MasonryGridView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      gridDelegate: const SliverSimpleGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-      ),
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      itemCount: items.length,
-      itemBuilder: (context, index) {
+    return Column(
+      children: [
+        Expanded(
+          child: MasonryGridView.builder(
+            controller: controller,
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            gridDelegate: const SliverSimpleGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+            ),
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            itemCount: items.length,
+            itemBuilder: (context, index) {
         final item = items[index];
 
         return GestureDetector(
@@ -129,6 +138,20 @@ class MasonryGridViewWidget extends StatelessWidget {
           ),
         );
       },
+    ),
+  ),
+  if (isFetchingMore)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16.0),
+            child: Center(
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
