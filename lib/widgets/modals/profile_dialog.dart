@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ootdmate_frontend/core/theme/app_theme.dart';
 import 'package:ootdmate_frontend/services/auth-services/auth_services.dart';
 import 'package:ootdmate_frontend/models/user_model.dart';
+import 'package:ootdmate_frontend/screens/misc/profile/profile_screen.dart';
 
 class ProfileDialog extends StatelessWidget {
   final UserModel? user;
@@ -66,6 +67,29 @@ class ProfileDialog extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                 const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppTheme.acidGreen),
+                      foregroundColor: AppTheme.acidGreen,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)
+                      )
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProfileScreen(user: user),
+                        ),
+                      );
+                    },
+                    child: const Text("Go to Profile", style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(

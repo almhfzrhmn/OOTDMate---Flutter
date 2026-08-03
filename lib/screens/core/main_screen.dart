@@ -3,7 +3,7 @@ import 'package:ootdmate_frontend/models/user_model.dart';
 import 'package:ootdmate_frontend/screens/core/favorite/favorite_screen.dart';
 import 'package:ootdmate_frontend/screens/core/recommendation/recommendation_screen.dart';
 import 'package:ootdmate_frontend/services/auth-services/auth_services.dart';
-import 'package:ootdmate_frontend/widgets/custom_navbar_curved.dart';
+import 'package:ootdmate_frontend/widgets/ui/custom_navbar_curved.dart';
 
 import "package:ootdmate_frontend/screens/core/home/home_screen.dart";
 import "package:ootdmate_frontend/screens/core/wardrobes/wardrobe_screen.dart";

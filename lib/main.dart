@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/constants/api_constants.dart';
 import 'package:ootdmate_frontend/services/auth-services/auth_gate.dart';
 import 'package:ootdmate_frontend/core/theme/app_theme.dart';
+// import 'package:ootdmate_frontend/test_screen.dart';
 
 final supabase = Supabase.instance.client;
 
@@ -31,6 +32,7 @@ class OOTDMateApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
       home: const AuthGate(),
+      // home : const TestScreen(),
       // home: const MainScreen(),
       // home: const AuthGate(),
     );

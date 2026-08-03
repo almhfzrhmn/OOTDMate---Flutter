@@ -4,7 +4,7 @@ import 'package:ootdmate_frontend/services/auth-services/auth_services.dart';
 import 'package:ootdmate_frontend/widgets/background_wrapper.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ootdmate_frontend/core/theme/app_theme.dart';
-import 'package:ootdmate_frontend/widgets/glass_text_field.dart';
+import 'package:ootdmate_frontend/widgets/ui/glass_text_field.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

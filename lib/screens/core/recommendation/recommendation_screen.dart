@@ -693,12 +693,6 @@ class _AnchorItemCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────
-// WIDGET: Outfit Item Card (untuk State 3)
-// Menampilkan 1 item dalam grid hasil outfit.
-// Bisa jadi anchor (isAnchor=true) atau rekomendasi AI.
-// ─────────────────────────────────────────────
-
 class _OutfitItemCard extends StatelessWidget {
   final String imageUrl;
   final String category;

@@ -1,70 +1,28 @@
-// import 'package:flutter/material.dart';
-// import 'services/api-services/api_services.dart';
+import 'package:flutter/material.dart';
+import 'package:ootdmate_frontend/widgets/ui/flip_card.dart';
+import 'package:ootdmate_frontend/core/theme/app_theme.dart';
 
-// class TestScreen extends StatefulWidget {
-//   const TestScreen({super.key});
+class TestScreen extends StatelessWidget {
+  const TestScreen({super.key});
 
-//   @override
-//   State<TestScreen> createState() => _TestScreenState();
-// }
-
-// class _TestScreenState extends State<TestScreen> {
-
-//   final ApiServices _apiServices = ApiServices();
-//   bool _isLoading = false;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _showData();
-//   }
-
-//   Future<void> _showData() async {
-//     setState(() {
-//       _isLoading = true;
-//     });
-
-//     try {
-//       await _apiServices.getUsers();
-//     } catch (e) {
-//       if(!mounted) return;
-//       _showError("Error saat mengambil data! : ${e.toString()}");
-//     } finally {
-//       if(!mounted) return;
-//       _isLoading = false;
-//     }
-//   }
-
-//   void _showError(String message) {
-//     ScaffoldMessenger.of(context).showSnackBar(
-//       SnackBar(
-//         content: Text(message),
-//         backgroundColor: Colors.red,
-//       )
-//     );
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       body: SafeArea(
-//         child: SafeArea(
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.center,
-//             children: [
-//               Center(
-//                 child: Text("debug Screen"),
-//               ), 
-//               // Expanded(
-//               //   child: ListView.builder(
-//               //     itemCount: ,
-//               //     itemBuilder: ,
-//               //   ),
-//               // )
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child : Center(
+          child : Column(
+            children : [
+              SizedBox(height: 20),
+              Text(
+                "Flip Card Test",
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              SizedBox(height: 20),
+              FlipCard(),
+            ]
+          )
+        )
+      )
+    );
+  }
+}

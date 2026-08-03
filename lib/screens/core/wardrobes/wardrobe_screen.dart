@@ -1,11 +1,14 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:ootdmate_frontend/core/theme/app_theme.dart';
 import 'package:ootdmate_frontend/models/user_model.dart';
 import 'package:ootdmate_frontend/services/api-services/wardrobe_item_service.dart';
 import 'package:ootdmate_frontend/models/wardrobe_item_model.dart';
-import 'package:ootdmate_frontend/widgets/app_header.dart';
-import 'package:ootdmate_frontend/widgets/neumorphic_text_field.dart';
-import 'package:ootdmate_frontend/screens/core/wardrobes/item_details.dart';
+import 'package:ootdmate_frontend/widgets/ui/app_header.dart';
+import 'package:ootdmate_frontend/widgets/ui/neumorphic_text_field.dart';
+import 'package:ootdmate_frontend/widgets/ui/masonry_gridview_widget.dart';
+import 'package:ootdmate_frontend/widgets/ui/wardrobe_empty_state.dart';
+import 'package:ootdmate_frontend/widgets/ui/wardrobe_error_state.dart';
 
 class WardrobeScreen extends StatefulWidget {
   final UserModel? userProfile;
@@ -20,9 +23,15 @@ class WardrobeScreen extends StatefulWidget {
 class _WardrobeScreenState extends State<WardrobeScreen> {
   final WardrobeItemService _wardrobeItemService = WardrobeItemService();
 
-  late Future<List<WardrobeItemModel>> _futureWardrobe;
+  List<WardrobeItemModel> _allWardrobeItems = [];
+  List<WardrobeItemModel> _filteredItems = [];
+  
+  bool _isLoading = true;
+  String? _errorMessage;
 
   final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
+  
   String? _selectedCategory;
   bool _sortDescending = true; // newest first by reversing the list
   final Set<String> _categories = {};
@@ -32,23 +41,69 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
     super.initState();
     _fetchData();
   }
+  
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _debounce?.cancel();
+    super.dispose();
+  }
 
-  void _fetchData({String? nameQuery, String? category, bool? sortDesc}) {
+  Future<void> _fetchData() async {
     setState(() {
-      _futureWardrobe = _wardrobeItemService
-          .getWardrobeItems(name: nameQuery, category: category)
-          .then((list) {
-            // collect categories for filter dropdown
-            for (final it in list) {
-              if (it.category.isNotEmpty) _categories.add(it.category);
-            }
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
-            // apply sort client-side by reversing list when needed
-            if ((sortDesc ?? _sortDescending) == true) {
-              return list.reversed.toList();
-            }
-            return list;
-          });
+    try {
+      final list = await _wardrobeItemService.getWardrobeItems();
+      _categories.clear();
+      for (final it in list) {
+        if (it.category.isNotEmpty) _categories.add(it.category);
+      }
+      
+      _allWardrobeItems = list;
+      _applyLocalFilter(); // Will update _filteredItems and _isLoading = false
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+  
+  void _applyLocalFilter() {
+    List<WardrobeItemModel> results = List.from(_allWardrobeItems);
+    
+    // 1. Filter by Search Query
+    final query = _searchController.text.trim().toLowerCase();
+    if (query.isNotEmpty) {
+      results = results.where((item) => 
+        (item.name?.toLowerCase().contains(query) ?? false) || 
+        item.category.toLowerCase().contains(query)
+      ).toList();
+    }
+    
+    // 2. Filter by Category
+    if (_selectedCategory != null) {
+      results = results.where((item) => item.category == _selectedCategory).toList();
+    }
+    
+    // 3. Sort
+    if (_sortDescending) {
+      results = results.reversed.toList();
+    }
+    
+    setState(() {
+      _filteredItems = results;
+      _isLoading = false;
+    });
+  }
+  
+  void _onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      _applyLocalFilter();
     });
   }
 
@@ -85,8 +140,7 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
                         child: Text('All'),
                       ),
                       ..._categories.map(
-                        (c) =>
-                            DropdownMenuItem<String?>(value: c, child: Text(c)),
+                        (c) => DropdownMenuItem<String?>(value: c, child: Text(c)),
                       ),
                     ],
                     onChanged: (v) => setModalState(() => tempCategory = v),
@@ -108,7 +162,7 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
                           groupValue: tempSortDesc,
                           onChanged: (v) =>
                               setModalState(() => tempSortDesc = v ?? true),
-                          title: const Text('Newest first'),
+                          title: const Text('Newest first', style: TextStyle(fontSize: 14)),
                         ),
                       ),
                       Expanded(
@@ -117,7 +171,7 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
                           groupValue: tempSortDesc,
                           onChanged: (v) =>
                               setModalState(() => tempSortDesc = v ?? false),
-                          title: const Text('Oldest first'),
+                          title: const Text('Oldest first', style: TextStyle(fontSize: 14)),
                         ),
                       ),
                     ],
@@ -151,46 +205,36 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
     if (result != null) {
       _selectedCategory = result['category'] as String?;
       _sortDescending = result['sortDesc'] as bool? ?? _sortDescending;
-      _fetchData(
-        nameQuery: _searchController.text.isEmpty
-            ? null
-            : _searchController.text,
-        category: _selectedCategory,
-        sortDesc: _sortDescending,
-      );
+      _applyLocalFilter();
     }
   }
 
-  // 
-
   Widget _buildCategoryButton(String category, Color color) {
     final bool selected = _selectedCategory == category;
-    return ElevatedButton(
-      onPressed: () {
-        setState(() { 
-          _selectedCategory = category;
-        });
-        _fetchData(
-          nameQuery: _searchController.text.isEmpty
-              ? null
-              : _searchController.text,
-          category: _selectedCategory,
-          sortDesc: _sortDescending,
-        );
-      },
-      style: ElevatedButton.styleFrom(
-        minimumSize: const Size(100, 17),
-        padding: EdgeInsets.zero,
-        backgroundColor: selected ? color : color.withAlpha(130),
-        elevation: selected ? 2 : 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      ),
-      child: Text(
-        category,
-        style: TextStyle(
-          color: selected ? AppTheme.primary : color,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
+    return Padding(
+      padding: const EdgeInsets.only(right: 12.0),
+      child: ElevatedButton(
+        onPressed: () {
+          setState(() { 
+            // Toggle off if already selected
+            _selectedCategory = selected ? null : category;
+          });
+          _applyLocalFilter();
+        },
+        style: ElevatedButton.styleFrom(
+          minimumSize: const Size(100, 17),
+          padding: EdgeInsets.zero,
+          backgroundColor: selected ? color : color.withAlpha(130),
+          elevation: selected ? 2 : 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        ),
+        child: Text(
+          category,
+          style: TextStyle(
+            color: selected ? AppTheme.primary : color,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
@@ -200,6 +244,9 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
   Widget build(BuildContext context) {
     final displayName = widget.userProfile?.fullName ?? 'Guest';
     final displayAvatar = widget.avatarUrl ?? widget.userProfile?.avatarUrl;
+    
+    // Assign colors to dynamic categories for visual variety
+    final colors = [AppTheme.acidGreen, AppTheme.success, AppTheme.neonBlue, AppTheme.glitchMagenta, AppTheme.cyberPurple];
 
     return Scaffold(
       appBar: AppHeader(
@@ -220,13 +267,11 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
                     child: SizedBox(
                       height: 40,
                       child: NeumorphicTextField(
-                        hintText: "Search",
+                        hintText: "Search items...",
                         controller: _searchController,
                         prefixIcon: Icons.search,
                         textInputAction: TextInputAction.search,
-                        onSubmitted: (query) => {
-                          _fetchData(nameQuery: _searchController.text)
-                        },
+                        onChanged: _onSearchChanged, // Replaced onSubmitted with onChanged for debounce
                       ),
                     ),
                   ),
@@ -247,211 +292,33 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
                 ],
               ),
               const SizedBox(height: 10),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _buildCategoryButton('Topwear', AppTheme.acidGreen),
-                    const SizedBox(width: 12),
-                    _buildCategoryButton('Bottomwear', AppTheme.success),
-                    const SizedBox(width: 12),
-                    _buildCategoryButton('Footwear', AppTheme.neonBlue),
-                  ],
+              if (_categories.isNotEmpty)
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: _categories.toList().asMap().entries.map((entry) {
+                      int idx = entry.key;
+                      String cat = entry.value;
+                      Color color = colors[idx % colors.length];
+                      return _buildCategoryButton(cat, color);
+                    }).toList(),
+                  ),
                 ),
-              ),
               const SizedBox(height: 12),
               Expanded(
-                child: FutureBuilder<List<WardrobeItemModel>>(
-                  future: _futureWardrobe,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.error_outline,
-                              color: AppTheme.error,
-                              size: 48,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              "Something went wrong",
-                              style: Theme.of(context).textTheme.titleSmall,
-                            ),
-                            const SizedBox(height: 4),
-                            Text('${snapshot.error}'),
-                          ],
-                        ),
-                      );
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.checkroom,
-                              size: 64,
-                              color: AppTheme.glitchMagenta.withAlpha(130),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              'Your wardrobe is empty',
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Add items to see them here',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    final List<WardrobeItemModel> wardrobeList = snapshot.data!;
-
-                    return GridView.builder(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                            childAspectRatio: 0.78,
-                          ),
-                      itemCount: wardrobeList.length,
-                      itemBuilder: (context, index) {
-                        final items = wardrobeList[index];
-
-                        return GestureDetector(
-                          onTap: () async {
-                            final result = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ItemDetailsScreen(item: items),
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _errorMessage != null
+                        ? WardrobeErrorState(
+                            errorMessage: _errorMessage!,
+                            onRetry: _fetchData,
+                          )
+                        : _filteredItems.isEmpty
+                            ? const WardrobeEmptyState()
+                            : MasonryGridViewWidget(
+                                items: _filteredItems,
+                                onRefreshNeeded: _fetchData,
                               ),
-                            );
-                            // Refresh data if item was edited or deleted
-                            if (result == true) {
-                              _fetchData(
-                                nameQuery: _searchController.text.isEmpty
-                                    ? null
-                                    : _searchController.text,
-                                category: _selectedCategory,
-                                sortDesc: _sortDescending,
-                              );
-                            }
-                          },
-                          child: Card(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            elevation: 2,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                Expanded(
-                                  child: Stack(
-                                    children: [
-                                      Positioned.fill(
-                                        child: Hero(
-                                          tag: items.id,
-                                          child: Image.network(
-                                            items.imageUrl,
-                                            fit: BoxFit.cover,
-                                            errorBuilder:
-                                                (context, error, stackTrace) =>
-                                                    Center(
-                                                      child: Icon(
-                                                        Icons.broken_image,
-                                                        size: 40,
-                                                        color: AppTheme.error,
-                                                      ),
-                                                    ),
-                                          ),
-                                        ),
-                                      ),
-                                      Positioned(
-                                        left: 0,
-                                        right: 0,
-                                        bottom: 0,
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 6,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            gradient: LinearGradient(
-                                              begin: Alignment.topCenter,
-                                              end: Alignment.bottomCenter,
-                                              colors: [
-                                                Colors.transparent,
-                                                Colors.black45,
-                                              ],
-                                            ),
-                                          ),
-                                          child: Text(
-                                            items.name?.isNotEmpty == true ? items.name! : 'Unnamed Item',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium
-                                                ?.copyWith(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 6,
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          items.category,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall
-                                              ?.copyWith(
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Icon(
-                                        Icons.more_vert,
-                                        size: 18,
-                                        color: Colors.grey[600],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
               ),
             ],
           ),

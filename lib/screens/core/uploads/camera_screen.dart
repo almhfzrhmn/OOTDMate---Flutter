@@ -7,10 +7,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:ootdmate_frontend/core/theme/app_theme.dart';
 import 'package:ootdmate_frontend/models/wardrobe_item_model.dart';
 import 'package:ootdmate_frontend/services/api-services/wardrobe_item_service.dart';
-import 'package:ootdmate_frontend/widgets/clothing_guide_overlay.dart';
-import 'package:ootdmate_frontend/widgets/color_picker_field.dart';
-import 'package:ootdmate_frontend/widgets/glass_text_field.dart';
-import 'package:ootdmate_frontend/widgets/scan_animation_widget.dart';
+import 'package:ootdmate_frontend/widgets/ui/clothing_guide_overlay.dart';
+import 'package:ootdmate_frontend/widgets/ui/color_picker_field.dart';
+import 'package:ootdmate_frontend/widgets/ui/glass_text_field.dart';
+import 'package:ootdmate_frontend/widgets/ui/scan_animation_widget.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 /// Step-based upload flow:

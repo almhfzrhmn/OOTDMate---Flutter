@@ -3,7 +3,7 @@ import 'package:ootdmate_frontend/core/theme/app_theme.dart';
 import 'package:ootdmate_frontend/models/user_model.dart';
 import 'package:ootdmate_frontend/models/wardrobe_stats_model.dart';
 import 'package:ootdmate_frontend/services/api-services/wardrobe_item_service.dart';
-import 'package:ootdmate_frontend/widgets/app_header.dart';
+import 'package:ootdmate_frontend/widgets/ui/app_header.dart';
 import 'package:ootdmate_frontend/widgets/charts/wardrobe_donut_chart.dart';
 
 class HomeScreen extends StatefulWidget {
