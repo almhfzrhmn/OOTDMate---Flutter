@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ootdmate_frontend/widgets/ui/flip_card.dart';
-import 'package:ootdmate_frontend/core/theme/app_theme.dart';
+// import 'package:ootdmate_frontend/core/theme/app_theme.dart';
 
 class TestScreen extends StatelessWidget {
   const TestScreen({super.key});

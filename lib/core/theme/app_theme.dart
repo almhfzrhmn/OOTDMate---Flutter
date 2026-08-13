@@ -162,7 +162,7 @@ class AppTheme {
     // ── INPUT DECORATION ──
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: lightGrey.withAlpha(153),
+      fillColor: Colors.transparent,
       hintStyle: GoogleFonts.poppins(
         color: secondary.withAlpha(150),
         fontSize: 14,

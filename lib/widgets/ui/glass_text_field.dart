@@ -46,9 +46,9 @@ class GlassTextField extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.white.withAlpha(56),  // 0.22
-            Colors.white.withAlpha(13),  // 0.05
-            Colors.white.withAlpha(31),  // 0.12
+            Colors.transparent,  // 0.22
+            Colors.transparent,  // 0.22
+            Colors.transparent,  // 0.22
           ],
           stops: const [0.0, 0.5, 1.0],
         ),
@@ -65,8 +65,8 @@ class GlassTextField extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.black.withAlpha(89), // 0.35
-                  Colors.black.withAlpha(64), // 0.25
+                  Colors.white.withAlpha(50), // 0.35
+                  Colors.white.withAlpha(40), // 0.25
                 ],
               ),
             ),
