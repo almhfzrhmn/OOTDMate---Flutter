@@ -31,7 +31,6 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
-      // AuthGate otomatis handle navigasi ke HomeScreen
     } on AuthException catch (e) {
       if (!mounted) return;
       _showError(e.message);
