@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ootdmate_frontend/core/theme/app_theme.dart';
 import 'package:ootdmate_frontend/models/user_model.dart';
 import 'package:ootdmate_frontend/models/wardrobe_stats_model.dart';
+import 'package:ootdmate_frontend/screens/core/uploads/camera_screen.dart';
 import 'package:ootdmate_frontend/services/api-services/wardrobe_item_service.dart';
 import 'package:ootdmate_frontend/widgets/ui/app_header.dart';
 import 'package:ootdmate_frontend/widgets/charts/wardrobe_donut_chart.dart';
@@ -177,9 +178,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       description: "Upload & classify",
                       accentColor: AppTheme.acidGreen,
                       onTap: () {
-                        // TODO: Navigasi ke upload screen
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Upload feature coming soon!")),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const CameraScreen(),)
                         );
                       },
                     ),

@@ -115,18 +115,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 controller: _controller,
                 children: [
                   _buildSlide(
-                    "AI OOTD Matcher",
-                    "Temukan kombinasi pakaian terbaikmu secara instan.",
+                    "Find Your Perfect Outfit",
+                    "Discover outfit combination that match your wardrobe and help you dress with confidence every day",
                     AppTheme.acidGreen,
                   ),
                   _buildSlide(
-                    "Smart Wardrobe",
-                    "Digitalisasi lemarimu dalam hitungan detik.",
+                    ("Smart AI\nRecommendation"),
+                    "Upload your clothing items and let AI suggest outfit combinations based on your wardrobe collection.",
                     AppTheme.neonBlue,
                   ),
                   _buildSlide(
-                    "Style Assistant",
-                    "AI siap membantu gaya berpakaianmu setiap hari.",
+                    "Ready to Elevate Your Style",
+                    "Create your first outfit in just few taps",
                     AppTheme.glitchMagenta,
                   ),
                 ],
@@ -148,26 +148,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         children: [
           Text(
             title,
-            style: TextStyle(
-              fontSize: 42,
-              fontWeight: FontWeight.w900,
-              color: AppTheme.textPrimary,
-              letterSpacing: -1.5,
+            softWrap: true,
+            maxLines: 2,
+            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+              letterSpacing: -0.5,
+              fontSize : 36,
+              height: 1.2,
               shadows: [
                 Shadow(
                   color: accentColor, blurRadius: 15
                 )
-              ],
+              ]
             ),
           ),
           const SizedBox(height: 16),
           Text(
             desc,
-            style: TextStyle(
-              fontSize: 24,
-              color: AppTheme.textSecondary,
-              height: 1.5,
-            ),
+            style: Theme.of(context).textTheme.bodyMedium
           ),
         ],
       ),
