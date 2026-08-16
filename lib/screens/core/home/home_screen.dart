@@ -9,14 +9,15 @@ import 'package:ootdmate_frontend/widgets/ui/app_header.dart';
 import 'package:ootdmate_frontend/widgets/charts/wardrobe_donut_chart.dart';
 
 class HomeScreen extends StatefulWidget {
-  // Menerima data user dari MainScreen (bukan load sendiri!)
   final UserModel? userProfile;
   final String? avatarUrl;
+  final ValueChanged<UserModel>? onProfileUpdated;
 
   const HomeScreen({
     super.key,
     this.userProfile,
     this.avatarUrl,
+    this.onProfileUpdated,
   });
 
   @override
@@ -69,6 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
         avatarUrl: avatarUrl,
         username: name,
         currentUser: widget.userProfile,
+        onProfileUpdated: widget.onProfileUpdated,
       ),
       body: RefreshIndicator(
         color: AppTheme.acidGreen,

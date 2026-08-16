@@ -37,9 +37,15 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
+  void _onProfileUpdated(UserModel updatedUser) {
+    setState(() {
+      _userProfile = updatedUser;
+    });
+  }
+
   List<Widget> get _pages => [
-    HomeScreen(userProfile: _userProfile, avatarUrl: _userProfile?.avatarUrl),
-    WardrobeScreen(userProfile: _userProfile, avatarUrl: _userProfile?.avatarUrl),
+    HomeScreen(userProfile: _userProfile, avatarUrl: _userProfile?.avatarUrl, onProfileUpdated: _onProfileUpdated),
+    WardrobeScreen(userProfile: _userProfile, avatarUrl: _userProfile?.avatarUrl, onProfileUpdated: _onProfileUpdated),
     RecommendationScreen(),
     FavoriteScreen()
   ];

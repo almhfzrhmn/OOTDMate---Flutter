@@ -6,10 +6,12 @@ import 'package:ootdmate_frontend/screens/misc/profile/profile_screen.dart';
 
 class ProfileDialog extends StatelessWidget {
   final UserModel? user;
+  final ValueChanged<UserModel>? onProfileUpdated;
 
   const ProfileDialog({
     super.key,
     this.user,
+    this.onProfileUpdated,
   });
 
   @override
@@ -47,11 +49,7 @@ class ProfileDialog extends StatelessWidget {
                       ? NetworkImage(user!.avatarUrl!)
                       : null,
                   child: (user?.avatarUrl == null || user!.avatarUrl!.isEmpty)
-                    ? Icon(
-                        Icons.person_2,
-                        size: 40,
-                        color: AppTheme.acidGreen,
-                      )
+                    ? const Icon(Icons.person_2, size: 40, color: AppTheme.acidGreen)
                     : null,
                 ),
                 const SizedBox(height: 12),
@@ -82,7 +80,10 @@ class ProfileDialog extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ProfileScreen(user: user),
+                          builder: (context) => ProfileScreen(
+                            user: user,
+                            onProfileUpdated: onProfileUpdated,
+                          ),
                         ),
                       );
                     },
@@ -104,7 +105,6 @@ class ProfileDialog extends StatelessWidget {
                       if (context.mounted) {
                         Navigator.of(context).pop();
                       }
-                      
                       await AuthServices().signOut();
                     },
                     child: const Text("Logout", style: TextStyle(fontWeight: FontWeight.bold)),

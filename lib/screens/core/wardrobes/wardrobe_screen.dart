@@ -13,8 +13,9 @@ import 'package:ootdmate_frontend/widgets/ui/wardrobe_error_state.dart';
 class WardrobeScreen extends StatefulWidget {
   final UserModel? userProfile;
   final String? avatarUrl;
+  final ValueChanged<UserModel>? onProfileUpdated;
 
-  const WardrobeScreen({super.key, this.userProfile, this.avatarUrl});
+  const WardrobeScreen({super.key, this.userProfile, this.avatarUrl, this.onProfileUpdated});
 
   @override
   State<WardrobeScreen> createState() => _WardrobeScreenState();
@@ -284,6 +285,7 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
         avatarUrl: displayAvatar,
         username: displayName,
         currentUser: widget.userProfile,
+        onProfileUpdated: widget.onProfileUpdated,
       ),
       body: SafeArea(
         child: Padding(

@@ -1,39 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:ootdmate_frontend/core/theme/app_theme.dart';
 import 'package:ootdmate_frontend/models/user_model.dart';
+import 'package:ootdmate_frontend/screens/misc/profile/edit_profile_screen.dart';
 import 'package:ootdmate_frontend/services/auth-services/auth_services.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   final UserModel? user;
+  final ValueChanged<UserModel>? onProfileUpdated;
 
-  const ProfileScreen({super.key, this.user});
+  const ProfileScreen({super.key, this.user, this.onProfileUpdated});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  late UserModel? _user;
+
+  @override
+  void initState() {
+    super.initState();
+    _user = widget.user;
+  }
 
   @override
   Widget build(BuildContext context) {
-    const Color headerGradientStart = AppTheme.primary;
-    const Color headerGradientEnd = AppTheme.surface;
-
-    final displayName = user?.fullName ?? 'Guest';
-    final email = user?.email ?? '';
-    final avatarUrl = user?.avatarUrl;
+    final displayName = _user?.fullName ?? 'Guest';
+    final email = _user?.email ?? '';
+    final avatarUrl = _user?.avatarUrl;
 
     return Scaffold(
+      backgroundColor: AppTheme.primary,
       body: SingleChildScrollView(
         child: Column(
           children: [
             Container(
               padding: const EdgeInsets.only(
-                top: 50.0,
-                left: 20.0,
-                right: 20.0,
-                bottom: 30.0,
+                top: 50.0, left: 20.0, right: 20.0, bottom: 30.0,
               ),
               decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [headerGradientStart, headerGradientEnd],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
+                color: AppTheme.secondary,
                 borderRadius: BorderRadius.vertical(
                   bottom: Radius.circular(36.0),
                 ),
@@ -54,7 +60,7 @@ class ProfileScreen extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(width: 44), // For balance with back button
+                      const SizedBox(width: 44),
                     ],
                   ),
                   const SizedBox(height: 20.0),
@@ -62,10 +68,7 @@ class ProfileScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppTheme.acidGreen,
-                        width: 2.0,
-                      ),
+                      border: Border.all(color: AppTheme.acidGreen, width: 2.0),
                     ),
                     child: CircleAvatar(
                       radius: 50.0,
@@ -74,11 +77,7 @@ class ProfileScreen extends StatelessWidget {
                           ? NetworkImage(avatarUrl)
                           : null,
                       child: (avatarUrl == null || avatarUrl.isEmpty)
-                          ? const Icon(
-                              Icons.person_2,
-                              size: 50,
-                              color: AppTheme.acidGreen,
-                            )
+                          ? const Icon(Icons.person_2, size: 50, color: AppTheme.acidGreen)
                           : null,
                     ),
                   ),
@@ -86,17 +85,16 @@ class ProfileScreen extends StatelessWidget {
                   Text(
                     displayName,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                      fontWeight: FontWeight.bold, color: Colors.white,
+                    ),
                   ),
                   const SizedBox(height: 4.0),
                   if (email.isNotEmpty)
                     Text(
                       email,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.white70,
-                          ),
+                        color: Colors.white70,
+                      ),
                     ),
                 ],
               ),
@@ -106,12 +104,20 @@ class ProfileScreen extends StatelessWidget {
               child: Column(
                 children: [
                   _buildMenuItem(
-                    icon: Icons.settings,
-                    title: "Settings",
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Settings coming soon')),
+                    icon: Icons.edit_outlined,
+                    title: "Edit Profile",
+                    onTap: () async {
+                      if (_user == null) return;
+                      final updatedUser = await Navigator.push<UserModel>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditProfileScreen(user: _user!),
+                        ),
                       );
+                      if (updatedUser != null) {
+                        setState(() => _user = updatedUser);
+                        widget.onProfileUpdated?.call(updatedUser);
+                      }
                     },
                   ),
                   _buildMenuItem(
@@ -119,7 +125,7 @@ class ProfileScreen extends StatelessWidget {
                     title: "Help & Support",
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Help & Support coming soon')),
+                        const SnackBar(content: Text('Help & Support coming soon', style: TextStyle(color: AppTheme.primary))),
                       );
                     },
                   ),
@@ -144,15 +150,11 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildIconButton({
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
+  Widget _buildIconButton({required IconData icon, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 44,
-        height: 44,
+        width: 44, height: 44,
         decoration: BoxDecoration(
           color: Colors.white.withAlpha(30),
           shape: BoxShape.circle,
@@ -176,19 +178,16 @@ class ProfileScreen extends StatelessWidget {
         border: Border.all(
           color: isDestructive ? AppTheme.error.withAlpha(50) : Colors.transparent,
           width: 1,
-        )
+        ),
       ),
       child: ListTile(
         onTap: onTap,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         leading: Container(
-          width: 42,
-          height: 42,
+          width: 42, height: 42,
           decoration: BoxDecoration(
-            color: isDestructive 
-              ? AppTheme.error.withAlpha(30)
-              : AppTheme.primary.withAlpha(80),
+            color: isDestructive ? AppTheme.error.withAlpha(30) : AppTheme.primary.withAlpha(80),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: isDestructive ? AppTheme.error : AppTheme.acidGreen, size: 20),
@@ -202,8 +201,7 @@ class ProfileScreen extends StatelessWidget {
           ),
         ),
         trailing: Container(
-          width: 36,
-          height: 36,
+          width: 36, height: 36,
           decoration: BoxDecoration(
             color: AppTheme.primary.withAlpha(80),
             shape: BoxShape.circle,

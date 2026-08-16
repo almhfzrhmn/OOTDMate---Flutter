@@ -11,6 +11,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onProfileTap;
   final UserModel? currentUser;
   final bool showAvatar;
+  final ValueChanged<UserModel>? onProfileUpdated;
 
   const AppHeader({
     super.key,
@@ -21,6 +22,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
     this.username,
     this.onProfileTap,
     this.showAvatar = true,
+    this.onProfileUpdated,
   });
 
   @override
@@ -67,7 +69,10 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                   } else {
                     showDialog(
                       context: context,
-                      builder: (context) => ProfileDialog(user: currentUser),
+                      builder: (context) => ProfileDialog(
+                        user: currentUser,
+                        onProfileUpdated: onProfileUpdated,
+                      ),
                     );
                   }
                 },
