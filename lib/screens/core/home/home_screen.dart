@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ootdmate_frontend/core/theme/app_theme.dart';
 import 'package:ootdmate_frontend/models/user_model.dart';
 import 'package:ootdmate_frontend/models/wardrobe_stats_model.dart';
+import 'package:ootdmate_frontend/screens/core/recommendation/recommendation_screen.dart';
 import 'package:ootdmate_frontend/screens/core/uploads/camera_screen.dart';
 import 'package:ootdmate_frontend/services/api-services/wardrobe_item_service.dart';
 import 'package:ootdmate_frontend/widgets/ui/app_header.dart';
@@ -194,9 +195,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       description: "AI outfit matcher",
                       accentColor: AppTheme.glitchMagenta,
                       onTap: () {
-                        // TODO: Navigasi ke OOTD Generator (F-03.2 PRD)
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("OOTD Generator coming soon!")),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const RecommendationScreen() )
                         );
                       },
                     ),
