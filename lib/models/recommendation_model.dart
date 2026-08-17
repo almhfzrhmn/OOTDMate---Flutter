@@ -1,11 +1,3 @@
-// ─────────────────────────────────────────────
-// MODEL: Recommendation Response
-// Merepresentasikan hasil rekomendasi outfit dari AI.
-// Response dari: POST /api/v1/recommend/from-wardrobe/{item_id}
-// ─────────────────────────────────────────────
-
-/// Item yang dipilih user sebagai pakaian acuan (anchor).
-/// Backend menyebut ini "query_item".
 class QueryItemModel {
   final String? id;
   final String imageUrl;
@@ -29,9 +21,6 @@ class QueryItemModel {
   }
 }
 
-/// Satu item rekomendasi dari AI.
-/// Setiap item punya similarity_score (skor kecocokan)
-/// dan rank (peringkat ke berapa dalam top-K).
 class RecommendedItemModel {
   final String id;
   final String imageUrl;

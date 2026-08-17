@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/constants/api_constants.dart';
-// import 'package:ootdmate_frontend/services/auth-services/auth_gate.dart';
 import 'package:ootdmate_frontend/core/theme/app_theme.dart';
-// import 'package:ootdmate_frontend/test_screen.dart';
 import 'package:ootdmate_frontend/splash_screen.dart';
 
 final supabase = Supabase.instance.client;
@@ -32,9 +30,7 @@ class OOTDMateApp extends StatelessWidget {
       title: 'OOTDMate',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
-      // home: const AuthGate(),
       home : const SplashScreen()
-      // home : const TestScreen(),
     );
   }
 }

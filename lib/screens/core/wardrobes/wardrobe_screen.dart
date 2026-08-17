@@ -34,7 +34,6 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
   int _currentPage = 1;
   final int _limit = 20;
   bool _hasMore = true;
-  final ScrollController _scrollController = ScrollController();
 
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
@@ -46,20 +45,18 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
     _fetchData(); // Load first page
   }
   
   @override
   void dispose() {
-    _scrollController.dispose();
     _searchController.dispose();
     _debounce?.cancel();
     super.dispose();
   }
 
-  void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+  void _onScrollNotification(ScrollNotification scrollInfo) {
+    if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
       _fetchNextPage();
     }
   }
@@ -279,20 +276,20 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
     final colors = [AppTheme.acidGreen, AppTheme.success, AppTheme.neonBlue, AppTheme.glitchMagenta, AppTheme.cyberPurple];
 
     return Scaffold(
-      appBar: AppHeader(
-        title: "Your Collection",
-        subTitle: "Browse all your favorite outfits",
-        avatarUrl: displayAvatar,
-        username: displayName,
-        currentUser: widget.userProfile,
-        onProfileUpdated: widget.onProfileUpdated,
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            children: [
-              Row(
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) => [
+          AppHeader(
+            title: "Your Collection",
+            subTitle: "Browse all your favorite outfits",
+            avatarUrl: displayAvatar,
+            username: displayName,
+            currentUser: widget.userProfile,
+            onProfileUpdated: widget.onProfileUpdated,
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 12.0, right: 12.0, top: 12.0, bottom: 10.0),
+              child: Row(
                 children: [
                   Expanded(
                     child: SizedBox(
@@ -322,9 +319,13 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
-              if (_categories.isNotEmpty)
-                SingleChildScrollView(
+            ),
+          ),
+          if (_categories.isNotEmpty)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 12.0, right: 12.0, bottom: 12.0),
+                child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: _categories.toList().asMap().entries.map((entry) {
@@ -335,25 +336,33 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
                     }).toList(),
                   ),
                 ),
-              const SizedBox(height: 12),
-              Expanded(
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _errorMessage != null
-                        ? WardrobeErrorState(
-                            errorMessage: _errorMessage!,
-                            onRetry: () => _fetchData(refresh: true),
-                          )
-                        : _wardrobeItems.isEmpty
-                            ? const WardrobeEmptyState()
-                            : MasonryGridViewWidget(
-                                items: _wardrobeItems,
-                                controller: _scrollController,
-                                isFetchingMore: _isFetchingMore,
-                                onRefreshNeeded: () => _fetchData(refresh: true),
-                              ),
               ),
-            ],
+            ),
+        ],
+        body: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _errorMessage != null
+                    ? WardrobeErrorState(
+                        errorMessage: _errorMessage!,
+                        onRetry: () => _fetchData(refresh: true),
+                      )
+                    : _wardrobeItems.isEmpty
+                        ? const WardrobeEmptyState()
+                        : NotificationListener<ScrollNotification>(
+                            onNotification: (scrollInfo) {
+                              _onScrollNotification(scrollInfo);
+                              return false;
+                            },
+                            child: MasonryGridViewWidget(
+                              items: _wardrobeItems,
+                              isFetchingMore: _isFetchingMore,
+                              onRefreshNeeded: () => _fetchData(refresh: true),
+                            ),
+                          ),
           ),
         ),
       ),

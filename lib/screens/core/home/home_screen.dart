@@ -64,18 +64,22 @@ class _HomeScreenState extends State<HomeScreen> {
     final String? avatarUrl = widget.avatarUrl ?? widget.userProfile?.avatarUrl;
 
     return Scaffold(
-      appBar: AppHeader(
-        title: "Hi, ${name[0].toUpperCase() + name.substring(1)}",
-        subTitle: "Let's create your stylish look for today",
-        avatarUrl: avatarUrl,
-        username: name,
-        currentUser: widget.userProfile,
-        onProfileUpdated: widget.onProfileUpdated,
-      ),
-      body: RefreshIndicator(
-        color: AppTheme.acidGreen,
-        onRefresh: _loadStats,
-        child: _buildBody(context),
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) => [
+          AppHeader(
+            title: "Hi, ${name[0].toUpperCase() + name.substring(1)}",
+            subTitle: "Let's create your stylish look for today",
+            avatarUrl: avatarUrl,
+            username: name,
+            currentUser: widget.userProfile,
+            onProfileUpdated: widget.onProfileUpdated,
+          ),
+        ],
+        body: RefreshIndicator(
+          color: AppTheme.acidGreen,
+          onRefresh: _loadStats,
+          child: _buildBody(context),
+        ),
       ),
     );
   }
