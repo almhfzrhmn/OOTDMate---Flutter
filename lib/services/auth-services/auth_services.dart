@@ -94,11 +94,14 @@ class AuthServices {
       'full_name': normalizedFullName,
     });
 
+    final existingProfile = await getProfile();
+
     final data = await _upsertProfile(
       id: user.id,
-      email: user.email ?? '',
+      email: user.email ?? existingProfile?.email ?? '',
       username: normalizedUsername,
       fullName: normalizedFullName,
+      avatarUrl: existingProfile?.avatarUrl,
     );
 
     return UserModel.fromJson(data);
