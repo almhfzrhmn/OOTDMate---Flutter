@@ -80,143 +80,152 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: BackgroundWrapper(
-        child: Stack(
-          children: [
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(24, 0, 24, 40),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Welcome To',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(height: 0),
-                      Text(
-                        'OOTDMATE',
-                        style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                          fontSize: 45,
-                          shadows: [
-                            Shadow(
-                              color: AppTheme.textPrimary.withAlpha(70),
-                              offset: Offset(-10, 4),
-                              blurRadius: 10
-                            )
-                          ]
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Create your account to get magic recommendations for your OOTD!',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Already have an account?',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: _isLoading
-                                ? null
-                                : () => Navigator.pop(context),
-                            child: Text(
-                              'Login',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight,
+                  ),
+                  child: IntrinsicHeight(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text(
+                              'Welcome To',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.w900,
-                                letterSpacing: 0.1
+                                fontSize: 12,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        "Create New Account",
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.1,
+                            const SizedBox(height: 0),
+                            Text(
+                              'OOTDMATE',
+                              style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                                fontSize: 45,
+                                shadows: [
+                                  Shadow(
+                                    color: AppTheme.textPrimary.withAlpha(70),
+                                    offset: Offset(-10, 4),
+                                    blurRadius: 10
+                                  )
+                                ]
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Create your account to get magic recommendations for your OOTD!',
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Already have an account?',
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: _isLoading
+                                      ? null
+                                      : () => Navigator.pop(context),
+                                  child: Text(
+                                    'Login',
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.1
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              "Create New Account",
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.1,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            GlassTextField(
+                              hintText: "Fullname",
+                              prefixIcon: Icons.person,
+                              controller: _fullNameController,
+                            ),
+                            const SizedBox(height: 10),
+                            GlassTextField(
+                              hintText: "Username",
+                              prefixIcon: Icons.person_2,
+                              controller: _usernameController,
+                            ),
+                            const SizedBox(height: 10),
+                            GlassTextField(
+                              hintText: "Email",
+                              prefixIcon: Icons.email,
+                              controller: _emailController,
+                            ),
+                            const SizedBox(height: 10),
+                            GlassTextField(
+                              hintText: "Password",
+                              prefixIcon: Icons.lock,
+                              obscureText: _obscurePassword,
+                              suffixIcon: _obscurePassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              controller: _passwordController,
+                              onSuffixIconPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                            ),
+                            const SizedBox(height: 10),
+                            GlassTextField(
+                              hintText: "Confirm Password",
+                              prefixIcon: Icons.lock,
+                              obscureText: _obscurePassword,
+                              suffixIcon: _obscurePassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              controller: _confirmPasswordController,
+                              onSuffixIconPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                            ),
+                            const SizedBox(height: 20),
+                            ElevatedButton(
+                              onPressed: _isLoading ? null : _submit,
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      height: 18,
+                                      width: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Text('Register'),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      GlassTextField(
-                        hintText: "Fullname",
-                        prefixIcon: Icons.person,
-                        controller: _fullNameController,
-                      ),
-                      const SizedBox(height: 10),
-                      GlassTextField(
-                        hintText: "Username",
-                        prefixIcon: Icons.person_2,
-                        controller: _usernameController,
-                      ),
-                      const SizedBox(height: 10),
-                      GlassTextField(
-                        hintText: "Email",
-                        prefixIcon: Icons.email,
-                        controller: _emailController,
-                      ),
-                      const SizedBox(height: 10),
-                      GlassTextField(
-                        hintText: "Password",
-                        prefixIcon: Icons.lock,
-                        obscureText: _obscurePassword,
-                        suffixIcon: _obscurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        controller: _passwordController,
-                        onSuffixIconPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      GlassTextField(
-                        hintText: "Confirm Password",
-                        prefixIcon: Icons.lock,
-                        obscureText: _obscurePassword,
-                        suffixIcon: _obscurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        controller: _confirmPasswordController,
-                        onSuffixIconPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: _isLoading ? null : _submit,
-                        child: _isLoading
-                            ? const SizedBox(
-                                height: 18,
-                                width: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Text('Register'),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-          ],
+              );
+            },
+          ),
         ),
       ),
     );
