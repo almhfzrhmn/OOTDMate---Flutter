@@ -1,5 +1,8 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide MultipartFile;
 import 'package:ootdmate_frontend/models/user_model.dart';
+import 'package:ootdmate_frontend/core/constants/dio_client.dart';
 
 class AuthServices {
   final _client = Supabase.instance.client;
@@ -117,6 +120,36 @@ class AuthServices {
     );
 
     return UserModel.fromJson(data);
+  }
+
+  Future<UserModel?> uploadAvatar(File imageFile) async {
+    try {
+      final dioClient = DioClient();
+      String filename = imageFile.path.split('/').last;
+      
+      FormData formData = FormData.fromMap({
+        'image': await MultipartFile.fromFile(
+          imageFile.path,
+          filename: filename,
+        ),
+      });
+
+      final response = await dioClient.dio.post(
+        '/users/me/avatar',
+        data: formData,
+      );
+
+      final userModel = UserModel.fromJson(response.data);
+      
+      // Update local Supabase auth metadata to match backend
+      if (userModel.avatarUrl != null) {
+        await updateUserMetadata({'avatar_url': userModel.avatarUrl});
+      }
+      
+      return userModel;
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['detail'] ?? "Failed to upload avatar to server");
+    }
   }
 
   Future<UserModel?> _fetchProfile(String userId) async {

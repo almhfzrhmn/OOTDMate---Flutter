@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ootdmate_frontend/models/user_model.dart';
 import 'package:ootdmate_frontend/core/theme/app_theme.dart';
 import 'package:ootdmate_frontend/services/auth-services/auth_services.dart';
@@ -57,26 +56,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     try {
       final file = File(picked.path);
-      final userId = widget.user.id;
-      final ext = picked.path.split('.').last;
-      final filePath = 'avatars/$userId/profile.$ext';
+      
+      final updatedUser = await _authServices.uploadAvatar(file);
 
-      final supabase = Supabase.instance.client;
-
-      await supabase.storage.from('user-wardrobe').upload(
-        filePath,
-        file,
-        fileOptions: const FileOptions(upsert: true),
-      );
-
-      final publicUrl = supabase.storage.from('user-wardrobe').getPublicUrl(filePath);
-
-      // Append cache buster to force refresh
-      final avatarUrlWithCacheBuster = '$publicUrl?t=${DateTime.now().millisecondsSinceEpoch}';
-
-      await _authServices.updateAvatarUrl(avatarUrlWithCacheBuster);
-
-      if (mounted) {
+      if (mounted && updatedUser?.avatarUrl != null) {
+        // Append cache buster to force refresh
+        final avatarUrlWithCacheBuster = '${updatedUser!.avatarUrl}?t=${DateTime.now().millisecondsSinceEpoch}';
         setState(() => _currentAvatarUrl = avatarUrlWithCacheBuster);
       }
     } catch (e) {
