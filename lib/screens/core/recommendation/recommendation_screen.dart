@@ -200,7 +200,12 @@ class _RecommendationScreenState extends State<RecommendationScreen>
       await _recommendService.saveOutfit(itemIds: itemIds);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Outfit saved! ✨")),
+        const SnackBar(content: Text(
+          "Outfit saved!",
+          style: TextStyle(
+            color: AppTheme.primary
+          ),
+          )),
       );
     } catch (e) {
       if (!mounted) return;
