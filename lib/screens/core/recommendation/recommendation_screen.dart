@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:ootdmate_frontend/core/theme/app_theme.dart';
 import 'package:ootdmate_frontend/models/wardrobe_item_model.dart';
 import 'package:ootdmate_frontend/models/recommendation_model.dart';
@@ -20,6 +24,7 @@ class _RecommendationScreenState extends State<RecommendationScreen>
   // ── Services ──
   final WardrobeItemService _wardrobeService = WardrobeItemService();
   final RecommendationService _recommendService = RecommendationService();
+  final ImagePicker _imagePicker = ImagePicker();
 
   // ── State ──
   _ScreenState _screenState = _ScreenState.selectAnchor;
@@ -38,6 +43,10 @@ class _RecommendationScreenState extends State<RecommendationScreen>
   RecommendationResponseModel? _result;
   WardrobeItemModel? _selectedAnchor; // Item yang dipilih user
   String? _resultError;
+
+  // Upload-based recommendation state
+  File? _uploadedImage;     // File gambar yang diupload (bukan dari wardrobe)
+  bool _isFromUpload = false; // Apakah rekomendasi dari upload?
 
   // Shuffle: Index untuk cycling melalui Top-K
   // Saat shuffle, kita ganti item yang ditampilkan per kategori
@@ -164,6 +173,8 @@ class _RecommendationScreenState extends State<RecommendationScreen>
       _screenState = _ScreenState.selectAnchor;
       _result = null;
       _selectedAnchor = null;
+      _uploadedImage = null;
+      _isFromUpload = false;
       _shuffleIndex = 0;
     });
   }
@@ -175,9 +186,498 @@ class _RecommendationScreenState extends State<RecommendationScreen>
     });
   }
 
-  /// Simpan outfit saat ini ke backend
-  Future<void> _saveOutfit() async {
+  // ─────────────────────────────────────────────
+  // UPLOAD-BASED RECOMMENDATION
+  // ─────────────────────────────────────────────
+
+  /// Buka kamera/galeri lalu langsung minta rekomendasi dari foto baru.
+  Future<void> _pickAndRecommend(ImageSource source) async {
+    try {
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: source,
+        imageQuality: 70,
+        maxHeight: 1080,
+      );
+      if (pickedFile == null) return;
+
+      final imageFile = File(pickedFile.path);
+      await _requestRecommendationFromUpload(imageFile);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal mengambil gambar: $e'),
+          backgroundColor: AppTheme.error,
+        ),
+      );
+    }
+  }
+
+  /// Kirim foto baru ke AI endpoint /recommend/from-upload.
+  Future<void> _requestRecommendationFromUpload(File imageFile) async {
+    setState(() {
+      _uploadedImage = imageFile;
+      _isFromUpload = true;
+      _selectedAnchor = null; // Tidak ada anchor dari wardrobe
+      _screenState = _ScreenState.loading;
+      _resultError = null;
+      _shuffleIndex = 0;
+    });
+
+    try {
+      final result = await _recommendService.getRecommendationsFromUpload(
+        imageFile: imageFile,
+        topK: 5,
+        saveToWardrobe: false,
+      );
+      if (!mounted) return;
+
+      // Buat WardrobeItemModel sementara dari query_item response
+      // agar UI card bisa render data anchor.
+      final queryItem = result.queryItem;
+      _selectedAnchor = WardrobeItemModel(
+        id: queryItem.id ?? '',
+        imageUrl: queryItem.imageUrl,
+        category: queryItem.category,
+        categoryConfidence: queryItem.confidence,
+      );
+
+      setState(() {
+        _result = result;
+        _screenState = _ScreenState.result;
+      });
+
+      // Tampilkan modal popup: "Simpan foto ini ke wardrobe?"
+      _showSaveToWardrobeDialog();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _resultError = e.toString();
+        _screenState = _ScreenState.result;
+      });
+    }
+  }
+
+  /// Modal popup yang menanyakan apakah user ingin menyimpan
+  /// foto yang baru difoto ke wardrobe atau tidak.
+  void _showSaveToWardrobeDialog() {
+    if (!mounted || _uploadedImage == null) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.secondary,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppTheme.acidGreen.withAlpha(20),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.checkroom_rounded,
+                color: AppTheme.acidGreen,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Simpan ke Lemari?',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Preview gambar
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.file(
+                _uploadedImage!,
+                width: 120,
+                height: 120,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Pakaian ini belum disimpan di lemari digital kamu. '
+              'Ingin menyimpannya agar bisa dipakai untuk rekomendasi lain nanti?',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 13,
+                color: AppTheme.textSecondary,
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          // Tombol "Tidak"
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Tidak, Lewati',
+              style: GoogleFonts.plusJakartaSans(
+                color: AppTheme.textSecondary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          // Tombol "Simpan"
+          ElevatedButton.icon(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await _saveUploadedItemToWardrobe();
+            },
+            icon: const Icon(Icons.save_rounded, size: 18),
+            label: Text(
+              'Simpan',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.acidGreen,
+              foregroundColor: AppTheme.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Simpan foto yang sudah diupload ke wardrobe via endpoint yang sama.
+  /// Menggunakan WardrobeItemService.uploadWardrobeItems.
+  Future<void> _saveUploadedItemToWardrobe() async {
+    if (_uploadedImage == null) return;
+
+    try {
+      final savedItem = await _wardrobeService.uploadWardrobeItems(
+        imageFile: _uploadedImage!,
+      );
+      if (!mounted) return;
+
+      // Update anchor ID agar Save Outfit bisa menyertakan item ini
+      setState(() {
+        _selectedAnchor = WardrobeItemModel(
+          id: savedItem.id,
+          imageUrl: savedItem.imageUrl,
+          category: savedItem.category,
+          categoryConfidence: savedItem.categoryConfidence,
+        );
+        _isFromUpload = false; // Sudah ada di wardrobe sekarang
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Tersimpan! Kategori: ${savedItem.category}',
+            style: const TextStyle(color: AppTheme.primary),
+          ),
+          backgroundColor: AppTheme.acidGreen,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal menyimpan: $e'),
+          backgroundColor: AppTheme.error,
+        ),
+      );
+    }
+  }
+
+  /// Hitung rata-rata compatibility score dari item rekomendasi yang ditampilkan
+  double _calculateCompatibilityScore() {
+    if (_result == null) return 0.0;
+    double totalScore = 0;
+    int count = 0;
+    for (final category in _result!.categoryNames) {
+      final items = _result!.recommendations[category]!;
+      if (items.isNotEmpty) {
+        final currentItem = items[_shuffleIndex % items.length];
+        totalScore += currentItem.similarityScore;
+        count++;
+      }
+    }
+    return count > 0 ? totalScore / count : 0.0;
+  }
+
+  /// Tampilkan modal bottom sheet untuk memberi metadata sebelum menyimpan
+  void _showSaveOutfitModal() {
     if (_result == null || _selectedAnchor == null) return;
+
+    final compatibilityScore = _calculateCompatibilityScore();
+    int personalRating = 0;
+    final notesController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) {
+          return Container(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(ctx).viewInsets.bottom,
+            ),
+            decoration: const BoxDecoration(
+              color: AppTheme.secondary,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Handle bar
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 20),
+                      decoration: BoxDecoration(
+                        color: AppTheme.surface,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+
+                  // Title
+                  Text(
+                    'Save This Outfit',
+                    style: GoogleFonts.poppins(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // ── System Compatibility Score ──
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surface.withAlpha(80),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: AppTheme.acidGreen.withAlpha(30),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 52,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppTheme.acidGreen.withAlpha(20),
+                            border: Border.all(
+                              color: AppTheme.acidGreen.withAlpha(60),
+                              width: 2,
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${(compatibilityScore * 100).toStringAsFixed(0)}%',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                                color: AppTheme.acidGreen,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'AI Compatibility Score',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Based on style similarity analysis',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 11,
+                                  color: AppTheme.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // ── Personal Star Rating ──
+                  Text(
+                    'Your personal rating',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: List.generate(5, (index) {
+                      final starIndex = index + 1;
+                      final isSelected = starIndex <= personalRating;
+                      return GestureDetector(
+                        onTap: () {
+                          setModalState(() {
+                            personalRating = starIndex;
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: AnimatedScale(
+                            scale: isSelected ? 1.1 : 1.0,
+                            duration: const Duration(milliseconds: 150),
+                            child: Icon(
+                              isSelected ? Icons.star_rounded : Icons.star_outline_rounded,
+                              color: isSelected ? AppTheme.electricAmber : AppTheme.surface,
+                              size: 36,
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // ── Notes Field ──
+                  Text(
+                    'Notes (optional)',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: notesController,
+                    maxLines: 2,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13,
+                      color: AppTheme.textPrimary,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'e.g., Perfect for weekend hangout...',
+                      hintStyle: GoogleFonts.plusJakartaSans(
+                        fontSize: 13,
+                        color: AppTheme.textSecondary.withAlpha(100),
+                      ),
+                      filled: true,
+                      fillColor: AppTheme.surface.withAlpha(80),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.all(14),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // ── Action Buttons ──
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppTheme.textSecondary,
+                            side: BorderSide(color: AppTheme.surface.withAlpha(150)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          child: Text(
+                            'Cancel',
+                            style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 2,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            final notesText = notesController.text.trim();
+                            Navigator.pop(ctx);
+                            _performSaveOutfit(
+                              notes: notesText.isNotEmpty ? notesText : null,
+                              overallScore: compatibilityScore,
+                            );
+                          },
+                          icon: const Icon(Icons.favorite_rounded, size: 18),
+                          label: Text(
+                            'Save Outfit',
+                            style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.acidGreen,
+                            foregroundColor: AppTheme.primary,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// Simpan outfit saat ini ke backend (dipanggil dari modal)
+  Future<void> _performSaveOutfit({
+    String? notes,
+    double? overallScore,
+  }) async {
+    if (_result == null || _selectedAnchor == null) return;
+
+    // Jika anchor dari upload dan belum disimpan, simpan dulu
+    if (_isFromUpload && _uploadedImage != null) {
+      await _saveUploadedItemToWardrobe();
+      // Jika masih _isFromUpload (gagal simpan), batalkan
+      if (_isFromUpload) return;
+    }
 
     // Kumpulkan ID semua item yang sedang ditampilkan
     final itemIds = <String>[];
@@ -197,15 +697,31 @@ class _RecommendationScreenState extends State<RecommendationScreen>
     }
 
     try {
-      await _recommendService.saveOutfit(itemIds: itemIds);
+      await _recommendService.saveOutfit(
+        itemIds: itemIds,
+        notes: notes,
+        overallCompatibilityScore: overallScore,
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(
-          "Outfit saved!",
-          style: TextStyle(
-            color: AppTheme.primary
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle_rounded, color: AppTheme.primary, size: 20),
+              const SizedBox(width: 10),
+              Text(
+                'Outfit saved to Favorites!',
+                style: GoogleFonts.plusJakartaSans(
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.primary,
+                ),
+              ),
+            ],
           ),
-          )),
+          backgroundColor: AppTheme.acidGreen,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
       );
     } catch (e) {
       if (!mounted) return;
@@ -310,6 +826,9 @@ class _RecommendationScreenState extends State<RecommendationScreen>
                 color: AppTheme.textSecondary,
               ),
             ),
+            const SizedBox(height: 24),
+            // Tetap tampilkan tombol scan meskipun wardrobe kosong
+            _buildScanNewItemButton(),
           ],
         ),
       );
@@ -337,6 +856,12 @@ class _RecommendationScreenState extends State<RecommendationScreen>
               color: AppTheme.textSecondary,
             ),
           ),
+        ),
+
+        // ── Tombol Scan New Item ──
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: _buildScanNewItemButton(),
         ),
 
         Expanded(
@@ -380,6 +905,142 @@ class _RecommendationScreenState extends State<RecommendationScreen>
     );
   }
 
+  /// Tombol "Scan New Item" — buka kamera/galeri untuk rekomendasi instan.
+  Widget _buildScanNewItemButton() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppTheme.glitchMagenta.withAlpha(15),
+            AppTheme.neonBlue.withAlpha(15),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppTheme.glitchMagenta.withAlpha(40),
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => _showImageSourceDialog(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppTheme.glitchMagenta.withAlpha(20),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.photo_camera_rounded,
+                    color: AppTheme.glitchMagenta,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Scan New Item',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Take a photo and get instant outfit recommendation',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 11,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: AppTheme.textSecondary,
+                  size: 16,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Dialog pilihan sumber gambar: Kamera atau Galeri.
+  void _showImageSourceDialog() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.secondary,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Pilih Sumber Gambar',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppTheme.acidGreen.withAlpha(20),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.camera_alt_rounded, color: AppTheme.acidGreen),
+                ),
+                title: Text('Kamera', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
+                subtitle: Text('Ambil foto langsung', style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppTheme.textSecondary)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickAndRecommend(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppTheme.neonBlue.withAlpha(20),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.photo_library_rounded, color: AppTheme.neonBlue),
+                ),
+                title: Text('Galeri', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
+                subtitle: Text('Pilih dari galeri', style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppTheme.textSecondary)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickAndRecommend(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // STATE 2: LOADING (AI sedang bekerja)
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -420,14 +1081,19 @@ class _RecommendationScreenState extends State<RecommendationScreen>
               child: SizedBox(
                 width: 160,
                 height: 160,
-                child: Image.network(
-                  _selectedAnchor?.imageUrl ?? '',
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => Container(
-                    color: AppTheme.surface,
-                    child: const Icon(Icons.image, size: 48),
-                  ),
-                ),
+                child: _isFromUpload && _uploadedImage != null
+                    ? Image.file(
+                        _uploadedImage!,
+                        fit: BoxFit.cover,
+                      )
+                    : Image.network(
+                        _selectedAnchor?.imageUrl ?? '',
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => Container(
+                          color: AppTheme.surface,
+                          child: const Icon(Icons.image, size: 48),
+                        ),
+                      ),
               ),
             ),
           ),
@@ -579,6 +1245,7 @@ class _RecommendationScreenState extends State<RecommendationScreen>
             category: _selectedAnchor?.category ?? '',
             name: _selectedAnchor?.name,
             isAnchor: true, // Style berbeda untuk anchor
+            localImageFile: _isFromUpload ? _uploadedImage : null,
           ),
         ),
 
@@ -645,7 +1312,7 @@ class _RecommendationScreenState extends State<RecommendationScreen>
             // Save Outfit Button
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: _saveOutfit,
+                onPressed: _showSaveOutfitModal,
                 icon: const Icon(Icons.favorite_border, size: 18),
                 label: const Text("Save Outfit"),
                 style: ElevatedButton.styleFrom(
@@ -768,6 +1435,7 @@ class _OutfitItemCard extends StatelessWidget {
   final String? name;
   final double? similarityScore;
   final bool isAnchor;
+  final File? localImageFile; // Untuk gambar dari upload lokal
 
   const _OutfitItemCard({
     required this.imageUrl,
@@ -775,6 +1443,7 @@ class _OutfitItemCard extends StatelessWidget {
     this.name,
     this.similarityScore,
     required this.isAnchor,
+    this.localImageFile,
   });
 
   @override
@@ -795,16 +1464,21 @@ class _OutfitItemCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Gambar
+          // Gambar (lokal atau network)
           Expanded(
-            child: Image.network(
-              imageUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => Container(
-                color: AppTheme.surface,
-                child: const Center(child: Icon(Icons.image, size: 40)),
-              ),
-            ),
+            child: localImageFile != null
+                ? Image.file(
+                    localImageFile!,
+                    fit: BoxFit.cover,
+                  )
+                : Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => Container(
+                      color: AppTheme.surface,
+                      child: const Center(child: Icon(Icons.image, size: 40)),
+                    ),
+                  ),
           ),
 
           // Info bar di bawah gambar

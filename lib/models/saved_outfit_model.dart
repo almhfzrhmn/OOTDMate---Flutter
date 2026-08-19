@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────
-// MODEL: Saved Outfit
-// Merepresentasikan kombinasi outfit yang disimpan oleh user.
-// Response dari: GET /api/v1/outfits
+// MODEL: Saved Outfit (Favorite)
+// Merepresentasikan kombinasi outfit yang disimpan & difavoritkan oleh user.
+// Response dari: GET /api/v1/favorites atau GET /api/v1/outfits
 // ─────────────────────────────────────────────
 
 import 'package:ootdmate_frontend/models/wardrobe_item_model.dart';
@@ -38,33 +38,43 @@ class SavedOutfitItemModel {
   String get name => wardrobeItem?.name ?? category;
 }
 
-/// Kombinasi outfit lengkap yang telah disimpan pengguna.
+/// Kombinasi outfit lengkap yang telah disimpan pengguna (Favorite).
 class SavedOutfitModel {
-  final String id;
-  final String? occasion;
-  final String? notes;
+  final String id; // ID Favorit
+  final String? recommendationId; // ID Outfit Recommendation di backend
+  final String? notes; // Catatan personal pengguna
+  final double? overallCompatibilityScore;
   final String createdAt;
   final List<SavedOutfitItemModel> items;
 
   SavedOutfitModel({
     required this.id,
-    this.occasion,
+    this.recommendationId,
     this.notes,
+    this.overallCompatibilityScore,
     required this.createdAt,
     required this.items,
   });
 
   factory SavedOutfitModel.fromJson(Map<String, dynamic> json) {
-    final rawItems = json['items'] as List? ?? [];
+    // Cek apakah response dari /favorites yang menyertakan relasi 'outfit'
+    final outfitJson = json['outfit'] as Map<String, dynamic>?;
+
+    final rawItems = (outfitJson != null ? outfitJson['items'] : json['items']) as List? ?? [];
     final items = rawItems
         .map((item) => SavedOutfitItemModel.fromJson(item))
         .toList();
 
+    final score = outfitJson != null
+        ? (outfitJson['overall_compatibility_score'] as num?)?.toDouble()
+        : (json['overall_compatibility_score'] as num?)?.toDouble();
+
     return SavedOutfitModel(
       id: json['id'] ?? '',
-      occasion: json['occasion'],
+      recommendationId: json['recommendation_id'] ?? (outfitJson != null ? outfitJson['id'] : null),
       notes: json['notes'],
-      createdAt: json['created_at'] ?? '',
+      overallCompatibilityScore: score,
+      createdAt: json['created_at'] ?? (outfitJson?['created_at'] ?? ''),
       items: items,
     );
   }
@@ -85,7 +95,7 @@ class SavedOutfitModel {
   }
 }
 
-/// Balikan lis dari endpoint GET /outfits
+/// Balikan lis dari endpoint GET /favorites atau GET /outfits
 class SavedOutfitListModel {
   final List<SavedOutfitModel> outfits;
   final int total;
