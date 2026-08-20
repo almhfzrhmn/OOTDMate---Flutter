@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ootdmate_frontend/core/theme/app_theme.dart';
 import 'package:ootdmate_frontend/models/user_model.dart';
 import 'package:ootdmate_frontend/screens/misc/profile/edit_profile_screen.dart';
+import 'package:ootdmate_frontend/screens/misc/profile/history_screen.dart';
 import 'package:ootdmate_frontend/services/auth-services/auth_services.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -118,6 +119,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         setState(() => _user = updatedUser);
                         widget.onProfileUpdated?.call(updatedUser);
                       }
+                    },
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.history_rounded,
+                    title: "Outfit History",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HistoryScreen(),
+                        ),
+                      );
                     },
                   ),
                   _buildMenuItem(
