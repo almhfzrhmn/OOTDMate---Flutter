@@ -161,18 +161,42 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               hintText: "Fullname",
                               prefixIcon: Icons.person,
                               controller: _fullNameController,
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Nama lengkap tidak boleh kosong';
+                                }
+                                return null;
+                              },
                             ),
                             const SizedBox(height: 10),
                             GlassTextField(
                               hintText: "Username",
                               prefixIcon: Icons.person_2,
                               controller: _usernameController,
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Username tidak boleh kosong';
+                                }
+                                if (value.length < 3) {
+                                  return 'Username minimal 3 karakter';
+                                }
+                                return null;
+                              },
                             ),
                             const SizedBox(height: 10),
                             GlassTextField(
                               hintText: "Email",
                               prefixIcon: Icons.email,
                               controller: _emailController,
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Email tidak boleh kosong';
+                                }
+                                if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                                  return 'Format email tidak valid';
+                                }
+                                return null;
+                              },
                             ),
                             const SizedBox(height: 10),
                             GlassTextField(
@@ -183,6 +207,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   ? Icons.visibility_off
                                   : Icons.visibility,
                               controller: _passwordController,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Password tidak boleh kosong';
+                                }
+                                if (value.length < 6) {
+                                  return 'Password minimal 6 karakter';
+                                }
+                                return null;
+                              },
                               onSuffixIconPressed: () {
                                 setState(() {
                                   _obscurePassword = !_obscurePassword;
@@ -198,6 +231,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   ? Icons.visibility_off
                                   : Icons.visibility,
                               controller: _confirmPasswordController,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Konfirmasi password tidak boleh kosong';
+                                }
+                                if (value != _passwordController.text) {
+                                  return 'Password dan konfirmasi password tidak sama';
+                                }
+                                return null;
+                              },
                               onSuffixIconPressed: () {
                                 setState(() {
                                   _obscurePassword = !_obscurePassword;

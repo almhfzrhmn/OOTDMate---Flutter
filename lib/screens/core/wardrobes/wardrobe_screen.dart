@@ -40,7 +40,7 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
   
   String? _selectedCategory;
   bool _sortDescending = true;
-  final Set<String> _categories = {'Topwear', 'Bottomwear', 'Footwear', 'Outerwear', 'Accessories'}; // Provide some defaults to show
+  final Set<String> _categories = {'Topwear', 'Bottomwear', 'Footwear'}; // Provide some defaults to show
 
   @override
   void initState() {

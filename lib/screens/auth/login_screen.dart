@@ -134,6 +134,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         hintText: "Email",
                         prefixIcon: Icons.mail,
                         controller: _emailController,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Email tidak boleh kosong';
+                          }
+                          // Basic email format validation
+                          if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                            return 'Format email tidak valid';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 10),
                       GlassTextField(
@@ -144,6 +154,15 @@ class _LoginScreenState extends State<LoginScreen> {
                             : Icons.visibility,
                         obscureText: _obscurePassword,
                         controller: _passwordController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Password tidak boleh kosong';
+                          }
+                          if (value.length < 6) {
+                            return 'Password minimal 6 karakter';
+                          }
+                          return null;
+                        },
                         onSuffixIconPressed: () {
                           setState(() {
                             _obscurePassword = !_obscurePassword;

@@ -14,6 +14,7 @@ class GlassTextField extends StatelessWidget {
 
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
+  final FormFieldValidator<String>? validator;
   
   final double height;
   final double blurSigma;
@@ -31,7 +32,8 @@ class GlassTextField extends StatelessWidget {
     this.blurSigma = 2,
     this.textInputAction,
     this.onChanged,
-    this.onSubmitted
+    this.onSubmitted,
+    this.validator,
   });
 
   @override
@@ -39,10 +41,11 @@ class GlassTextField extends StatelessWidget {
     final radius = height / 2;
 
     return Container(
-      height: height,
+      // Allow the field to grow dynamically if there's an error message
+      constraints: BoxConstraints(minHeight: height),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(radius),
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
@@ -50,7 +53,7 @@ class GlassTextField extends StatelessWidget {
             Colors.transparent,  // 0.22
             Colors.transparent,  // 0.22
           ],
-          stops: const [0.0, 0.5, 1.0],
+          stops: [0.0, 0.5, 1.0],
         ),
       ),
       padding: const EdgeInsets.all(1.2),
@@ -70,15 +73,16 @@ class GlassTextField extends StatelessWidget {
                 ],
               ),
             ),
-            child: TextField(
+            child: TextFormField(
               controller: controller,
               obscureText: obscureText,
               keyboardType: keyboardType,
+              validator: validator,
 
               // For Search-Spesific
               textInputAction: textInputAction,
               onChanged: onChanged,
-              onSubmitted: onSubmitted,
+              onFieldSubmitted: onSubmitted,
               
               cursorColor: Colors.white,
               style: const TextStyle(
