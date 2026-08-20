@@ -1339,7 +1339,7 @@ class _RecommendationScreenState extends State<RecommendationScreen>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.acidGreen,
                   foregroundColor: AppTheme.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding: const EdgeInsets.all(10.0),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
