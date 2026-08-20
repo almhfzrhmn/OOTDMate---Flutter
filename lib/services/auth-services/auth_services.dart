@@ -15,29 +15,50 @@ class AuthServices {
     required String username,
     required String fullName,
   }) async {
-    final normalizedEmail = email.trim().toLowerCase();
-    final normalizedUsername = username.trim();
-    final normalizedFullName = fullName.trim();
+    try {
+      final normalizedEmail = email.trim().toLowerCase();
+      final normalizedUsername = username.trim();
+      final normalizedFullName = fullName.trim();
 
-    final response = await _client.auth.signUp(
-      password: password,
-      email: normalizedEmail,
-      data: {'username': normalizedUsername, 'full_name': normalizedFullName},
-    );
-
-    final user = response.user;
-    final session = response.session ?? _client.auth.currentSession;
-
-    if (user != null && session != null) {
-      await _upsertProfile(
-        id: user.id,
+      final response = await _client.auth.signUp(
+        password: password,
         email: normalizedEmail,
-        username: normalizedUsername,
-        fullName: normalizedFullName,
+        data: {'username': normalizedUsername, 'full_name': normalizedFullName},
       );
-    }
 
-    return response;
+      // Supabase mengembalikan user dengan identities kosong jika email sudah ada (Email Enumeration Protection)
+      if (response.user != null && 
+          (response.user!.identities == null || response.user!.identities!.isEmpty)) {
+        throw Exception('Email ini sudah terdaftar. Silakan gunakan email lain atau login.');
+      }
+
+      final user = response.user;
+      final session = response.session ?? _client.auth.currentSession;
+
+      if (user != null && session != null) {
+        await _upsertProfile(
+          id: user.id,
+          email: normalizedEmail,
+          username: normalizedUsername,
+          fullName: normalizedFullName,
+        );
+      }
+
+      return response;
+    } on AuthException catch (e) {
+      if (e.message.toLowerCase().contains('already registered') || 
+          e.message.toLowerCase().contains('already exists')) {
+        throw Exception('Email ini sudah terdaftar. Silakan gunakan email lain atau login.');
+      } else if (e.message.toLowerCase().contains('password should be at least')) {
+        throw Exception('Kata sandi terlalu pendek. Gunakan minimal 6 karakter.');
+      }
+      throw Exception('Gagal mendaftar: ${e.message}');
+    } catch (e) {
+      if (e.toString().contains('sudah terdaftar')) {
+        rethrow;
+      }
+      throw Exception('Terjadi kesalahan tak terduga saat registrasi.');
+    }
   }
 
   // Login
@@ -45,17 +66,28 @@ class AuthServices {
     required String email,
     required String password,
   }) async {
-    final response = await _client.auth.signInWithPassword(
-      password: password,
-      email: email.trim().toLowerCase(),
-    );
+    try {
+      final response = await _client.auth.signInWithPassword(
+        password: password,
+        email: email.trim().toLowerCase(),
+      );
 
-    final user = response.user ?? _client.auth.currentUser;
-    if (user != null) {
-      await _ensureProfileExists(user);
+      final user = response.user ?? _client.auth.currentUser;
+      if (user != null) {
+        await _ensureProfileExists(user);
+      }
+
+      return response;
+    } on AuthException catch (e) {
+      if (e.message.toLowerCase().contains('invalid login credentials')) {
+        throw Exception('Email atau kata sandi salah.');
+      } else if (e.message.toLowerCase().contains('email not confirmed')) {
+        throw Exception('Email belum dikonfirmasi. Silakan periksa kotak masuk Anda.');
+      }
+      throw Exception('Gagal login: ${e.message}');
+    } catch (e) {
+      throw Exception('Terjadi kesalahan tak terduga saat login.');
     }
-
-    return response;
   }
 
   // Sign Out

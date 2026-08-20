@@ -205,7 +205,7 @@ class AppTheme {
       backgroundColor: acidGreen,
       contentTextStyle: GoogleFonts.poppins(
         fontSize: 14,
-        color: textPrimary,
+        color: primary,
       ),
     ),
 
