@@ -57,12 +57,18 @@ class AppHeader extends StatelessWidget {
                   children: [
                     Text(
                       title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w700
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Text(subTitle, style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    Text(
+                      subTitle, 
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       letterSpacing: -0.1
                     )),
                   ],
