@@ -10,7 +10,9 @@ import 'package:ootdmate_frontend/services/api-services/wardrobe_item_service.da
 import 'package:ootdmate_frontend/services/api-services/recommendation_service.dart';
 
 class RecommendationScreen extends StatefulWidget {
-  const RecommendationScreen({super.key});
+  final WardrobeItemModel? initialAnchor;
+
+  const RecommendationScreen({super.key, this.initialAnchor});
 
   @override
   State<RecommendationScreen> createState() => _RecommendationScreenState();
@@ -66,7 +68,12 @@ class _RecommendationScreenState extends State<RecommendationScreen>
     )..repeat(reverse: true); // Loop maju-mundur
 
     _scrollController.addListener(_onScroll);
-    _loadWardrobeItems(refresh: true);
+
+    if (widget.initialAnchor != null) {
+      _requestRecommendation(widget.initialAnchor!);
+    } else {
+      _loadWardrobeItems(refresh: true);
+    }
   }
 
   void _onScroll() {
@@ -177,6 +184,9 @@ class _RecommendationScreenState extends State<RecommendationScreen>
       _isFromUpload = false;
       _shuffleIndex = 0;
     });
+    if (_wardrobeItems.isEmpty && !_isLoadingWardrobe) {
+      _loadWardrobeItems(refresh: true);
+    }
   }
 
   /// Shuffle: Ganti ke kombinasi Top-K berikutnya (INSTAN, tanpa API call)
@@ -750,9 +760,20 @@ class _RecommendationScreenState extends State<RecommendationScreen>
         leading: _screenState != _ScreenState.selectAnchor
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
-                onPressed: _resetToSelection,
+                onPressed: () {
+                  if (Navigator.of(context).canPop() && widget.initialAnchor != null) {
+                    Navigator.of(context).pop();
+                  } else {
+                    _resetToSelection();
+                  }
+                },
               )
-            : null,
+            : (Navigator.of(context).canPop()
+                ? IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: () => Navigator.of(context).pop(),
+                  )
+                : null),
       ),
       body: SafeArea(
         child: AnimatedSwitcher(

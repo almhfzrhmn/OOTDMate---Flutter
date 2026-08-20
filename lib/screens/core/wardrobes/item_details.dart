@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ootdmate_frontend/core/theme/app_theme.dart';
 import 'package:ootdmate_frontend/models/wardrobe_item_model.dart';
+import 'package:ootdmate_frontend/screens/core/recommendation/recommendation_screen.dart';
 import 'package:ootdmate_frontend/widgets/modals/edit_item_modal.dart';
 
 class ItemDetailsScreen extends StatelessWidget {
@@ -77,20 +78,15 @@ class ItemDetailsScreen extends StatelessWidget {
                     elevation: 4,
                   ),
                   onPressed: () {
-                    // TODO: Pemicu untuk modul AI Recommendation (F-03.2 PRD)
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        backgroundColor: AppTheme.acidGreen,
-                        content: Text(
-                          "Mencari paduan pakaian untuk ${item.name ?? item.category}...",
-                          style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold),
-                        ),
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => RecommendationScreen(initialAnchor: item),
                       ),
                     );
                   },
                   icon: const Icon(Icons.auto_awesome, size: 20),
                   label: const Text(
-                    "CARI PASANGAN BAJU",
+                    "Find Outfit Recommendation",
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 0.5),
                   ),
                 ),
@@ -105,7 +101,6 @@ class ItemDetailsScreen extends StatelessWidget {
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          // SLIVER APP BAR — Bagian Header Gambar
           SliverAppBar(
             expandedHeight: 460.0,
             pinned: true,
