@@ -11,8 +11,9 @@ import 'package:ootdmate_frontend/services/api-services/recommendation_service.d
 
 class RecommendationScreen extends StatefulWidget {
   final WardrobeItemModel? initialAnchor;
+  final bool isActive;
 
-  const RecommendationScreen({super.key, this.initialAnchor});
+  const RecommendationScreen({super.key, this.initialAnchor, this.isActive = true});
 
   @override
   State<RecommendationScreen> createState() => _RecommendationScreenState();
@@ -89,6 +90,18 @@ class _RecommendationScreenState extends State<RecommendationScreen>
     _pulseController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(RecommendationScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Jika tab recommendation baru saja aktif (dari tab lain)
+    if (widget.isActive && !oldWidget.isActive) {
+      if (_screenState == _ScreenState.selectAnchor) {
+        // Refresh data wardrobe agar item yang dihapus hilang
+        _loadWardrobeItems(refresh: true);
+      }
+    }
   }
 
   // ─────────────────────────────────────────────
