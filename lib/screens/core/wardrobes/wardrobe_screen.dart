@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:ootdmate_frontend/core/theme/app_theme.dart';
 import 'package:ootdmate_frontend/models/user_model.dart';
 import 'package:ootdmate_frontend/services/api-services/wardrobe_item_service.dart';
+import 'package:ootdmate_frontend/services/wardrobe_sync_service.dart';
 import 'package:ootdmate_frontend/models/wardrobe_item_model.dart';
 import 'package:ootdmate_frontend/widgets/ui/app_header.dart';
 import 'package:ootdmate_frontend/widgets/ui/neumorphic_text_field.dart';
@@ -45,14 +46,22 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
   @override
   void initState() {
     super.initState();
+    WardrobeSyncService().wardrobeUpdateNotifier.addListener(_onWardrobeSync);
     _fetchData(); // Load first page
   }
   
   @override
   void dispose() {
+    WardrobeSyncService().wardrobeUpdateNotifier.removeListener(_onWardrobeSync);
     _searchController.dispose();
     _debounce?.cancel();
     super.dispose();
+  }
+
+  void _onWardrobeSync() {
+    if (mounted) {
+      _fetchData(refresh: true);
+    }
   }
 
   void _onScrollNotification(ScrollNotification scrollInfo) {

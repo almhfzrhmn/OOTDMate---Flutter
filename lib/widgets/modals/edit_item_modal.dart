@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ootdmate_frontend/core/theme/app_theme.dart';
 import 'package:ootdmate_frontend/models/wardrobe_item_model.dart';
 import 'package:ootdmate_frontend/services/api-services/wardrobe_item_service.dart';
+import 'package:ootdmate_frontend/services/wardrobe_sync_service.dart';
 
 class EditItemModal extends StatefulWidget {
   final WardrobeItemModel item;
@@ -54,6 +55,9 @@ class _EditItemModalState extends State<EditItemModal> {
         notes: _notesController.text.trim(),
       );
 
+      // Sinkronkan perubahan item ke seluruh layar
+      WardrobeSyncService().notifyWardrobeUpdated();
+
       if (!mounted) return;
       // Close modal and return "saved" so previous screen knows to refresh
       Navigator.of(context).pop('saved');
@@ -92,6 +96,10 @@ class _EditItemModalState extends State<EditItemModal> {
     setState(() => _isLoading = true);
     try {
       await _wardrobeItemService.deleteWardrobeItem(widget.item.id);
+
+      // Sinkronkan penghapusan item ke seluruh layar
+      WardrobeSyncService().notifyWardrobeUpdated();
+
       if (!mounted) return;
       // Close modal and return "deleted"
       Navigator.of(context).pop('deleted');

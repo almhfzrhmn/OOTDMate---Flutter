@@ -8,6 +8,7 @@ import 'package:ootdmate_frontend/models/wardrobe_item_model.dart';
 import 'package:ootdmate_frontend/models/recommendation_model.dart';
 import 'package:ootdmate_frontend/services/api-services/wardrobe_item_service.dart';
 import 'package:ootdmate_frontend/services/api-services/recommendation_service.dart';
+import 'package:ootdmate_frontend/services/wardrobe_sync_service.dart';
 
 class RecommendationScreen extends StatefulWidget {
   final WardrobeItemModel? initialAnchor;
@@ -69,10 +70,17 @@ class _RecommendationScreenState extends State<RecommendationScreen>
     )..repeat(reverse: true); // Loop maju-mundur
 
     _scrollController.addListener(_onScroll);
+    WardrobeSyncService().wardrobeUpdateNotifier.addListener(_onWardrobeSync);
 
     if (widget.initialAnchor != null) {
       _requestRecommendation(widget.initialAnchor!);
     } else {
+      _loadWardrobeItems(refresh: true);
+    }
+  }
+
+  void _onWardrobeSync() {
+    if (mounted && _screenState == _ScreenState.selectAnchor) {
       _loadWardrobeItems(refresh: true);
     }
   }
@@ -87,6 +95,7 @@ class _RecommendationScreenState extends State<RecommendationScreen>
 
   @override
   void dispose() {
+    WardrobeSyncService().wardrobeUpdateNotifier.removeListener(_onWardrobeSync);
     _pulseController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -404,6 +413,9 @@ class _RecommendationScreenState extends State<RecommendationScreen>
         );
         _isFromUpload = false; // Sudah ada di wardrobe sekarang
       });
+
+      // Sinkronkan ke WardrobeScreen & screen lainnya
+      WardrobeSyncService().notifyWardrobeUpdated();
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

@@ -47,6 +47,35 @@ class WardrobeItemService {
     }
   }
 
+  Future<Map<String, dynamic>> classifyWardrobeItem({
+    required File imageFile,
+  }) async {
+    try {
+      String filename = imageFile.path.split('/').last;
+      FormData formData = FormData.fromMap({
+        'image': await MultipartFile.fromFile(
+          imageFile.path,
+          filename: filename,
+        ),
+      });
+
+      final response = await _dioClient.dio.post(
+        '/wardrobe/classify',
+        data: formData,
+      );
+
+      return {
+        'category': response.data['category'] as String,
+        'category_confidence': (response.data['category_confidence'] as num).toDouble(),
+      };
+    } on DioException catch (e) {
+      if (kDebugMode) {
+        print("Failed to classify image: ${e.response?.data ?? e.message}");
+      }
+      throw Exception(e.response?.data['detail'] ?? "Gagal menganalisis gambar pakaian");
+    }
+  }
+
   Future<WardrobeItemModel> uploadWardrobeItems({
     required File imageFile,
     String? name,

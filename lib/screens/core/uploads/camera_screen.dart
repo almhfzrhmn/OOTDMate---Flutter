@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:ootdmate_frontend/core/theme/app_theme.dart';
 import 'package:ootdmate_frontend/models/wardrobe_item_model.dart';
 import 'package:ootdmate_frontend/services/api-services/wardrobe_item_service.dart';
+import 'package:ootdmate_frontend/services/wardrobe_sync_service.dart';
 import 'package:ootdmate_frontend/widgets/ui/clothing_guide_overlay.dart';
 import 'package:ootdmate_frontend/widgets/ui/color_picker_field.dart';
 import 'package:ootdmate_frontend/widgets/ui/glass_text_field.dart';
@@ -85,7 +86,7 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   // ─────────────────────────────────────────────
-  // UPLOAD & ML CLASSIFICATION (Step 3)
+  // UPLOAD & ML CLASSIFICATION (Step 3: Preview Only)
   // ─────────────────────────────────────────────
   Future<void> _uploadAndClassify() async {
     if (_image == null) return;
@@ -96,17 +97,23 @@ class _CameraScreenState extends State<CameraScreen> {
     });
 
     try {
-      // Jalankan upload dan timer minimum secara paralel
+      // Jalankan klasifikasi preview dan timer minimum secara paralel
+      // (Tidak menyimpan apapun ke database)
       final results = await Future.wait([
-        _wardrobeService.uploadWardrobeItems(imageFile: _image!),
+        _wardrobeService.classifyWardrobeItem(imageFile: _image!),
         Future.delayed(_minScanDuration),
       ]);
 
-      final WardrobeItemModel result = results[0] as WardrobeItemModel;
+      final Map<String, dynamic> classResult = results[0] as Map<String, dynamic>;
 
       if (mounted) {
         setState(() {
-          _classificationResult = result;
+          _classificationResult = WardrobeItemModel(
+            id: '',
+            imageUrl: '',
+            category: classResult['category'] as String,
+            categoryConfidence: (classResult['category_confidence'] as num).toDouble(),
+          );
           _currentStep = UploadStep.result;
         });
       }
@@ -122,10 +129,10 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   // ─────────────────────────────────────────────
-  // SAVE METADATA (Step 4)
+  // SAVE TO WARDROBE (Step 4: Real Persistence)
   // ─────────────────────────────────────────────
   Future<void> _saveMetadata() async {
-    if (_classificationResult == null) return;
+    if (_image == null || _classificationResult == null) return;
 
     setState(() => _isSavingMetadata = true);
 
@@ -134,23 +141,20 @@ class _CameraScreenState extends State<CameraScreen> {
       final String brand = _brandController.text.trim();
       final String notes = _notesController.text.trim();
 
-      // Hanya panggil PUT jika ada metadata yang diisi
-      if (name.isNotEmpty ||
-          brand.isNotEmpty ||
-          _selectedColor != null ||
-          notes.isNotEmpty) {
-        await _wardrobeService.updateWardrobeItem(
-          itemId: _classificationResult!.id,
-          name: name.isNotEmpty ? name : null,
-          brand: brand.isNotEmpty ? brand : null,
-          color: _selectedColor,
-          notes: notes.isNotEmpty ? notes : null,
-        );
-      }
+      // Upload file gambar sekaligus simpan item ke database
+      final savedItem = await _wardrobeService.uploadWardrobeItems(
+        imageFile: _image!,
+        name: name.isNotEmpty ? name : null,
+        brand: brand.isNotEmpty ? brand : null,
+        color: _selectedColor,
+        notes: notes.isNotEmpty ? notes : null,
+      );
 
       if (mounted) {
+        // Beritahu seluruh layar (Wardrobe, Recommendation) bahwa ada pakaian baru
+        WardrobeSyncService().notifyWardrobeUpdated();
         _showSnackBar(
-          'Berhasil disimpan! Kategori: ${_classificationResult!.category}',
+          'Berhasil disimpan ke lemari! Kategori: ${savedItem.category}',
         );
         Navigator.pop(context, true);
       }
@@ -179,7 +183,7 @@ class _CameraScreenState extends State<CameraScreen> {
           _currentStep = UploadStep.pickImage;
           break;
         case UploadStep.result:
-          // Dari result, kembali ke pick (karena item sudah tersimpan di backend)
+          // Dari result, kembali ke pick / foto baru (tanpa menyimpan item)
           _resetAll();
           break;
         default:
@@ -742,11 +746,29 @@ class _CameraScreenState extends State<CameraScreen> {
             child: TextButton(
               onPressed: _isSavingMetadata
                   ? null
-                  : () {
-                      _showSnackBar(
-                        'Berhasil disimpan! Kategori: ${result.category}',
-                      );
-                      Navigator.pop(context, true);
+                  : () async {
+                      if (_image == null) return;
+                      setState(() => _isSavingMetadata = true);
+                      try {
+                        final savedItem = await _wardrobeService.uploadWardrobeItems(
+                          imageFile: _image!,
+                        );
+                        if (mounted) {
+                          WardrobeSyncService().notifyWardrobeUpdated();
+                          _showSnackBar(
+                            'Berhasil disimpan ke lemari! Kategori: ${savedItem.category}',
+                          );
+                          Navigator.pop(context, true);
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          _showSnackBar('Gagal menyimpan: $e', isError: true);
+                        }
+                      } finally {
+                        if (mounted) {
+                          setState(() => _isSavingMetadata = false);
+                        }
+                      }
                     },
               child: Text(
                 'Lewati, simpan tanpa detail',
